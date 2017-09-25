@@ -63,7 +63,7 @@ class Reader:
     def get_u_object(self):
         return get_u_batch(1)
 
-    def get_u_batch(self, b, ):
+    def get_u_batch(self, b):
         if self.u_storage == None:
             self.u_storage = np.fromfile(self.u_dataset[self.u_cur_file]).reshape((-1, self.c, self.n))
 
