@@ -1,6 +1,7 @@
 from PIL import Image
 import cv2
 import os
+import numpy as np
 
 '''
 Training set is ([1,2,3, ...], [2,3,4 ...])
@@ -11,8 +12,9 @@ params is a dict
 
 class Reader:
     def __init__(self, params):
-        self.in_length = params['in_length']
-        self.out_length = params['out_length']
+        self.c = params['series_count']
+        self.n = params['in_length']
+        self.m = params['out_length']
         self.initial_dataset = params['dataset']
         
         # without u - labelled dataset
@@ -28,10 +30,6 @@ class Reader:
 
         self.storage = None
         self.u_storage = None
-
-        self.c = 0 # amount of time series
-        self.n = 0 # length of object
-        self.m = 0 # length of label
    
     def formalize(self):
         '''
