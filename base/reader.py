@@ -2,7 +2,10 @@ from PIL import Image
 import cv2
 import os
 import numpy as np
+<<<<<<< HEAD
 
+=======
+>>>>>>> 136950d78806ee6107cbcc426a234d33fdbb6e29
 '''
 Training set is ([1,2,3, ...], [2,3,4 ...])
 We provide an opportunity to transform one series to another
@@ -61,7 +64,7 @@ class Reader:
     def get_u_object(self):
         return get_u_batch(1)
 
-    def get_u_batch(self, b, ):
+    def get_u_batch(self, b):
         if self.u_storage == None:
             self.u_storage = np.fromfile(self.u_dataset[self.u_cur_file]).reshape((-1, self.c, self.n))
 
