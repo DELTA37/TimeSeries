@@ -1,36 +1,34 @@
-import tensorflow as tf
-import cv2
+import torch
+import torch.nn as nn
+from base.layers import *
+from collections import OrderedDict
 
-class Network:
-    def __init__(self, params):
-        self.pre_transform = [] # list of callable
-        self.post_transform = [] # list of callable
-        self.inputs = dict() # placeholder
-        self.labels = dict() # placeholder
-        self.outputs = dict() # operation
-        self.production = dict() # operaion
+class BaseNet(nn.Module):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        super(BaseNet, self).__init__(*args, **kwargs)
+        self.trainable = trainable
+        self.restore   = restore
 
-    def get_inputs(self):
-        return self.inputs
+    def get_trainable(self):
+        if self.trainable:
+            res = OrderedDict()
+            for layer in dir(self):
+                l = getattr(self, layer)
+                if isinstance(l, Layer) or isinstance(l, BaseNet):
+                    res.update(l.get_trainable())
+            return res
+        else:
+            return OrderedDict()
 
-    def get_labels(self):
-        return self.labels
+    def get_restorable(self):
+        if self.restore:
+            res = OrderedDict()
+            for layer in dir(self):
+                l = getattr(self, layer)
+                if isinstance(l, Layer) or isinstance(l, BaseNet):
+                    res.update(l.get_restorable())
+            return res
+        else:
+            return OrderedDict()
 
-    def get_outputs(self):
-        return self.outputs
 
-    def get_production(self):
-        return self.production
-    
-    def get_loss(self):
-        pass
-
-    def transform(self, inputs, restore):
-        '''
-        main model
-        '''
-        pass
-
-    def __call__(self, inputs, restore):
-        return self.transform(inputs, restore)
-    
