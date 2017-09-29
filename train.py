@@ -3,6 +3,7 @@ from model.netreader import NetReader
 from base.writer import write_summaries
 import argparse
 import json
+import os
 import torch.optim as optim
 
 parser = argparse.ArgumentParser()
@@ -30,21 +31,40 @@ opt_name = args.opt[0]
 
 ### model and reader
 model = Net()
-reader = NetReader(config)
-criterion = model.get_criterion()
+#reader = NetReader(config)
+criterion = model.get_criterion(config)
 
 ### trainable and restorable
 trainable_var = model.get_trainable()
+untrainable_var = model.state_dict()
+
+for key in trainable_var.keys():
+    del untrainable_var[key]
+
+
 restore_var = model.get_restorable()
 loss = 0
 
 ### optimizer detection
+print(list(model.parameters()))
+print("---")
+print(list(model.state_dict().values()))
+opt_params = [
+    {
+        'params': list(trainable_var.values()),
+        'lr' : lr,
+    },
+    {
+        'params': list(untrainable_var.values()),
+        'lr' : 0,
+    },
+]
 
 if opt_name == 'SGD':
-    optimizer = optim.SGD(trainable_var, lr=lr)
+    optimizer = optim.SGD([{'params' : list(model.state_dict().values()), 'lr':lr}])
     closure_bool = 0
 elif opt_name == 'Adam':
-    optimizer = optim.Adam(trainable_var, lr=lr)
+    optimizer = optim.Adam(opt_params)
     closure_bool = 0
 else:
     print("ERROR:")
