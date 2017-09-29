@@ -13,3 +13,4 @@ tensorboard==1.0.0a6
 tensorflow==1.2.1
 tqdm==4.11.2
 virtualenv==15.1.0
+pytorch==0.1.12
