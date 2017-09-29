@@ -72,7 +72,7 @@ for ep in range(start_epoch, start_epoch + N):
 
         data_x, data_y = reader.get_batch(config['batch_size'])
         x, y = Variable(data_x), Variable(data_y)
-        def closure():
+        def closure(): # special opt methods
             if not hasattr(closure, 'once'):
                 closure.once = 1
             optimizer.zero_grad()
