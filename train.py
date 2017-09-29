@@ -1,5 +1,6 @@
 from model.model import Net
 from model.netreader import NetReader
+from base.writer import write_summaries
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -34,15 +35,16 @@ for ep in range(N):
         x - take from reader
         '''
         y_pred = model(x)
+
         loss.append(loss_fn(y_pred, y))
-        '''
-        !TODO!
-        visualize loss
-        '''
+
+        write_summaries({'loss':loss[len(loss)-1]}, config['summary_path'])
+
         if t % auto_save == 0:
             d = model.get_restorable()
             save_checkpoint(d, config['restore_path'], ep, t)
-            print("step: {} loss: {}".format(t, loss.data[0]))
+            print("-----------------------------------------------\n")
+            print("step: {}\n losses:\n {}\n".format(t, loss.data[0]))
         
         model.zero_grad()
 
