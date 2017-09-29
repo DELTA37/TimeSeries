@@ -31,11 +31,12 @@ opt_name = args.opt[0]
 ### model and reader
 model = Net()
 reader = NetReader(config)
+criterion = model.get_criterion()
 
 ### trainable and restorable
 trainable_var = model.get_trainable()
 restore_var = model.get_restorable()
-loss = []
+loss = 0
 
 ### optimizer detection
 
@@ -73,21 +74,27 @@ for ep in range(start_epoch, start_epoch + N):
         data_x, data_y = reader.get_batch(config['batch_size'])
         x, y = Variable(data_x), Variable(data_y)
         def closure(): # special opt methods
-            if not hasattr(closure, 'once'):
+            if not hasattr(closure, 'once'): 
+                '''
+                we need once as we send this function to optimiser 
+                and it can invoke function several times
+                '''
                 closure.once = 1
+
             optimizer.zero_grad()
             y_pred = model(x)
             
-            # TODO loss_fn class
-            loss.append(loss_fn(y_pred, y))
+            loss = criterion(y_pred, y)
 
             if closure.once and t % auto_save == 0:
-                write_summaries({'loss':loss[len(loss)-1]}, config['summary_path'])
+
+                write_summaries({'loss':loss}, config['summary_path'])
+
                 d = {
                         'epoch' : ep + 1,
                         'state_dict' : model.get_restorable(),
                         'optimizer' : optimizer.state_dict()
-                    }
+                }
                 save_checkpoint(d, config['restore_path'], ep, t)
                 print("-----------------------------------------------\n")
                 print("step: {}\n losses:\n {}\n".format(t, loss.data[0]))

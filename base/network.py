@@ -30,4 +30,6 @@ class BaseNet(nn.Module):
             return res
         else:
             return OrderedDict()
-
+    
+    def get_loss(self, params):
+        pass

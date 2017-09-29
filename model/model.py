@@ -22,4 +22,8 @@ class Net(BaseNet):
         grad = self.conv1.backward(grad)
         return grad
 
+    def get_criterion(self, params):
+        return torch.nn.MSELoss() 
+
+
 
