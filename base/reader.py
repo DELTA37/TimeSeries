@@ -56,7 +56,7 @@ class Reader:
             self.cur_obj = 0
             self.storage = np.fromfile(self.dataset[self.cur_file]).reshape((-1, self.c, self.n + self.m))
         self.cur_obj += b
-        return self.storage[self.cur_obj - b:self.cur_obj, :, :]
+        return self.storage[self.cur_obj - b:self.cur_obj, :, 0:self.n], self.storage[self.cur_obj - b:self.cur_obj, :, self.n:]
 
     def get_u_object(self):
         return get_u_batch(1)
