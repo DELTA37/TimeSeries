@@ -75,10 +75,11 @@ else:
 
 ### restoraion TODO restore_dir and restore_file
 if config['restore']:
-    if os.path.isfile(config['restore_path']):
-        print("=> loading checkpoint '{}'".format(config['restore_path']))
+    restore_file = os.path.join(config['restore_path'], config['restore_file'])
+    if os.path.isfile(restore_file):
+        print("=> loading checkpoint '{}'".format(restore_file))
 
-        checkpoint = torch.load(config['restore_path'])
+        checkpoint = torch.load(restore_file)
         start_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
@@ -86,23 +87,11 @@ if config['restore']:
         print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
     else:
         print("ERROR:")
-        print("=> no checkpoint found at '{}'".format(config['restore_path']))
+        print("=> no checkpoint found at '{}'".format(restore_file))
         exit()
 else:
-    if os.path.isfile(config['restore_path']):
-        print("=> loading checkpoint '{}'".format(config['restore_path']))
-
-        checkpoint = torch.load(config['restore_path'])
-        start_epoch = checkpoint['epoch']
-        model.load_state_dict(checkpoint['state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
-
-        print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
-    else:
-        print("ERROR:")
-        print("=> no checkpoint found at '{}'".format(config['restore_path']))
-        exit()
-
+    if not os.path.isfile(config['restore_path']):
+        os.mkdir(config['restore_path'])
 
 ### training
 
