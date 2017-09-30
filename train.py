@@ -5,7 +5,7 @@ import argparse
 import json
 import os
 import torch.optim as optim
-
+from collections import OrderedDict
 parser = argparse.ArgumentParser()
 
 parser.add_argument('lr', type=float, nargs=1, help='learning rate')
@@ -35,20 +35,18 @@ model = Net()
 criterion = model.get_criterion(config)
 
 ### trainable and restorable
-trainable_var = model.get_trainable()
-untrainable_var = model.state_dict()
+trainable_var = OrderedDict(model.get_trainable())
+untrainable_var = OrderedDict(model.named_parameters())
 
-for key in trainable_var.keys():
+for key, val in trainable_var.items():
     del untrainable_var[key]
 
 
-restore_var = model.get_restorable()
+restore_var = OrderedDict(model.get_restorable())
 loss = 0
 
 ### optimizer detection
-print(list(model.parameters()))
-print("---")
-print(list(model.state_dict().values()))
+
 opt_params = [
     {
         'params': list(trainable_var.values()),
@@ -61,7 +59,7 @@ opt_params = [
 ]
 
 if opt_name == 'SGD':
-    optimizer = optim.SGD([{'params' : list(model.state_dict().values()), 'lr':lr}])
+    optimizer = optim.SGD(opt_params)
     closure_bool = 0
 elif opt_name == 'Adam':
     optimizer = optim.Adam(opt_params)

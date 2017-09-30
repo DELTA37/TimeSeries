@@ -3,9 +3,6 @@ import torch.nn as nn
 from base.layers import *
 from collections import OrderedDict
 
-def rename(self,key,new_key): # popular method for OrderedDict
-    self[new_key] = self[key]
-    del self[key]
 
 class BaseNet(nn.Module):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
@@ -15,34 +12,33 @@ class BaseNet(nn.Module):
 
     def get_trainable(self):
         if self.trainable:
-            res = OrderedDict()
+            res = list()
             for layer in dir(self):
                 l = getattr(self, layer)
                 if isinstance(l, Layer) or isinstance(l, BaseNet):
                     tr = l.get_trainable()
-                    lst = list(tr.keys())
-                    for key in lst: 
-                        rename(tr, key, layer + '.' + key)
-                    res.update(tr)
+                    newtr = []
+                    for key, val in tr:
+                        newtr.append((layer + '.' + key, val))
+                    res += newtr
             return res
         else:
-            return OrderedDict()
+            return list()
 
     def get_restorable(self):
         if self.restore:
-            res = OrderedDict()
+            res = list()
             for layer in dir(self):
                 l = getattr(self, layer)
                 if isinstance(l, Layer) or isinstance(l, BaseNet):
                     rs = l.get_restorable()
-                    lst = list(rs.keys())
-                    for key in lst: 
-                        rename(rs, key, layer + '.' + key)
-                    res.update(rs)
-
+                    newrs = []
+                    for key, val in rs:
+                        newrs.append((layer + '.' + key, val))
+                    res += newrs
             return res
         else:
-            return OrderedDict()
+            return list()
     
     def get_loss(self, params):
         pass

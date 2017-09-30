@@ -10,15 +10,15 @@ class Layer:
     def get_trainable(self):
         if self.trainable:
             print(super(Layer, self))
-            return nn.Module.state_dict(self)
+            return nn.Module.named_parameters(self)
         else:
-            return OrderedDict()
+            return list()
 
     def get_restorable(self):
         if self.restore:
-            return nn.Module.state_dict(self)
+            return nn.Module.named_parameters(self)
         else:
-            return OrderedDict()
+            return list()
 
 class Conv1dLayer(nn.Conv1d, Layer):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
