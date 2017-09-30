@@ -8,15 +8,19 @@ from base.layers import *
 from base.network import BaseNet
 
 class Net(BaseNet):
+    IMAGE_SHAPE = [10, 784]
     def __init__(self, *args, **kwargs):
         super(Net, self).__init__(*args, **kwargs)
         '''
         description of your model
         '''
-        self.conv1 = Conv1dLayer(1,1,3, restore=True, trainable=True)
-        
+        self.lin1 = LinearLayer(784, 1)
+
+    def get_inputs(self):
+        return {'image' : Variable(torch.randn(*Net.IMAGE_SHAPE), requires_grad=False)}
+    
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.lin1(x['image'])
         return x
     def backward(self, grad):
         grad = self.conv1.backward(grad)

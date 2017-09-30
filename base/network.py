@@ -40,5 +40,14 @@ class BaseNet(nn.Module):
         else:
             return list()
     
-    def get_loss(self, params):
+    def get_criterion(self, params):
         pass
+
+    def forward(self, inputs):
+        pass
+
+    def backward(self, grads):
+        pass
+
+    def get_inputs(self):
+        return dict()

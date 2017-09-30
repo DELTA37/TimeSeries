@@ -6,6 +6,9 @@ import json
 import os
 import torch.optim as optim
 from collections import OrderedDict
+from torch.autograd import Variable
+import torch
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('lr', type=float, nargs=1, help='learning rate')
@@ -31,7 +34,10 @@ opt_name = args.opt[0]
 
 ### model and reader
 model = Net()
-#reader = NetReader(config)
+reader = NetReader(config)
+
+data_loader = reader.getDataLoader()
+inputs = model.get_inputs()
 criterion = model.get_criterion(config)
 
 ### trainable and restorable
@@ -40,7 +46,6 @@ untrainable_var = OrderedDict(model.named_parameters())
 
 for key, val in trainable_var.items():
     del untrainable_var[key]
-
 
 restore_var = OrderedDict(model.get_restorable())
 loss = 0
@@ -68,29 +73,55 @@ else:
     print("ERROR:")
     print("There is no optimizer named {}".format(opt_name))
 
-### restoraion
+### restoraion TODO restore_dir and restore_file
+if config['restore']:
+    if os.path.isfile(config['restore_path']):
+        print("=> loading checkpoint '{}'".format(config['restore_path']))
 
-if os.path.isfile(config['restore_path']):
-    print("=> loading checkpoint '{}'".format(config['restore_path']))
+        checkpoint = torch.load(config['restore_path'])
+        start_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
 
-    checkpoint = torch.load(config['restore_path'])
-    start_epoch = checkpoint['epoch']
-    model.load_state_dict(checkpoint['state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
-
-    print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
+        print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
+    else:
+        print("ERROR:")
+        print("=> no checkpoint found at '{}'".format(config['restore_path']))
+        exit()
 else:
-    print("ERROR:")
-    print("=> no checkpoint found at '{}'".format(config['restore_path']))
-    exit()
+    if os.path.isfile(config['restore_path']):
+        print("=> loading checkpoint '{}'".format(config['restore_path']))
+
+        checkpoint = torch.load(config['restore_path'])
+        start_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
+    else:
+        print("ERROR:")
+        print("=> no checkpoint found at '{}'".format(config['restore_path']))
+        exit()
+
 
 ### training
 
 for ep in range(start_epoch, start_epoch + N):
-    for t in range(n):
+    t = 0
+    for data in data_loader:
+        x = dict()
+        for key, var in inputs.items():
+            if key not in data.keys():
+                print("ERROR: In data there is no key - {}".format(key))
+                assert(0)
+            if data[key].numpy().shape != var.data.numpy().shape:
+                print("ERROR: Shapes of inputs and data different at {}".format(key))
+                print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
+                assert(0)
+            x[key] = Variable(data[key])
 
-        data_x, data_y = reader.get_batch(config['batch_size'])
-        x, y = Variable(data_x), Variable(data_y)
+        y = Variable(data['label']) # TODO change it to get_output()
+
         def closure(): # special opt methods
             if not hasattr(closure, 'once'): 
                 '''
@@ -104,14 +135,16 @@ for ep in range(start_epoch, start_epoch + N):
             
             loss = criterion(y_pred, y)
 
+            loss_float = loss.data.numpy()[0]
+
             if closure.once and t % auto_save == 0:
 
-                write_summaries({'loss':loss}, config['summary_path'])
+                write_summaries({'loss':loss_float}, config['summary_path'])
 
                 d = {
-                        'epoch' : ep + 1,
-                        'state_dict' : model.get_restorable(),
-                        'optimizer' : optimizer.state_dict()
+                    'epoch' : ep + 1,
+                    'state_dict' : model.get_restorable(),
+                    'optimizer' : optimizer.state_dict()
                 }
                 save_checkpoint(d, config['restore_path'], ep, t)
                 print("-----------------------------------------------\n")
@@ -124,7 +157,9 @@ for ep in range(start_epoch, start_epoch + N):
         if closure_bool:
             optimizer.step(closure)
         else:
+            closure()
             optimizer.step()
         closure.once = 1
+        t += 1
         
 

@@ -30,6 +30,12 @@ class Conv2dLayer(nn.Conv2d, Layer):
         nn.Conv1d.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
+class LinearLayer(nn.Linear, Layer):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Linear.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+
 '''
 etc
 '''
