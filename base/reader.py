@@ -2,7 +2,7 @@ from PIL import Image
 import cv2
 import os
 import numpy as np
-
+import torch.utils.data.Dataset
 '''
 Training set is ([1,2,3, ...], [2,3,4 ...])
 We provide an opportunity to transform one series to another
