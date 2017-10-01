@@ -9,7 +9,16 @@ from torchvision import transforms
 
 class Reader:
     def __init__(self, params):
-        self.data_path = params['data_path']
+        '''
+        Initialize reader with config-file-parameters
+        '''
+        if   params['kind'] == 'train':
+            self.data_path = params['train_path']
+        elif params['kind'] == 'test':
+            self.data_path = params['test_path']
+        else:
+            raise NotImplemented
+
         transform_dict = params['transforms']
         lst = []
         for key, val in transform_dict.items(): # create a transforms from config
@@ -20,13 +29,21 @@ class Reader:
             else:
                 raise NotImplemented
 
-        self.transform  = transforms.Compose(lst)
-        self.dataset    = None # you need override this member
-        self.batch_size = params['batch_size']
-        self.shuffle    = params['shuffle']
+        self.transform          = transforms.Compose(lst)
+        self.dataset            = None # you need override this member
+        self.batch_size         = params['batch_size']
+        self.shuffle            = params['shuffle']
+        self.result_test_dir    = params['result_test_dir']
 
     def getDataLoader(self):
         '''
         return data loader of transfored data
         '''
         return DataLoader(self.dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+    
+    def ImageVisualization(self, image, y, loss):
+        '''
+        Embedded way to visualize your data
+        '''
+        pass
+        

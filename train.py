@@ -33,6 +33,7 @@ opt_name = args.opt[0]
 ### model and reader
 net_model = Net(config)
 net_reader = NetReader(config)
+net_model.train(mode=True)
 
 data_loader = net_reader.getDataLoader()
 inputs = net_model.get_inputs()

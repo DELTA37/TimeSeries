@@ -19,4 +19,7 @@ class MyDataset(Dataset):
 class NetReader(Reader):
     def __init__(self, params):
         super(NetReader, self).__init__(params)
-        self.dataset = MyDataset(params['data_path'], self.transform) 
+        self.dataset = MyDataset(self.data_path, self.transform) 
+
+    def visualize(self, x, y, loss):
+        pass
