@@ -101,6 +101,7 @@ for ep in range(start_epoch, start_epoch + N):
     for data in data_loader:
         x = dict()
         y = dict()
+
         for key, var in inputs.items():
             if key not in data.keys():
                 print("ERROR: In data there is no key - {}".format(key))
@@ -110,6 +111,7 @@ for ep in range(start_epoch, start_epoch + N):
                 print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
                 assert(0)
             x[key] = Variable(data[key], requires_grad=False)
+
         for key, var in outputs.items():
             if key not in data.keys():
                 print("ERROR: In data there is no key - {}".format(key))
@@ -133,13 +135,10 @@ for ep in range(start_epoch, start_epoch + N):
             y_pred = net_model(x)
             
             loss = criterion(y_pred, y)
-
             loss_float = loss.data.numpy()[0]
 
             if closure.once and t % auto_save == 0:
-
                 write_summaries({'loss':loss_float}, config['summary_path'])
-
                 d = {
                     'epoch' : ep + 1,
                     'state_dict' : net_model.get_restorable(),

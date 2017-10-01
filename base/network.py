@@ -45,12 +45,16 @@ class BaseNet(nn.Module):
         pass 
 
     def __call__(self, x):
-        nn.Module.__call__(self, x)
+        self.once = 0
+        for i in range(len(self.get_outputs().values())): 
+            nn.Module.__call__(self, x)
         return self.stored
 
     def forward(self, inputs):
-        self.stored = self.dict_forward(inputs)
-        return list(self.stored.values())[0]
+        self.once += 1 
+        if self.once == 1:
+            self.stored = self.dict_forward(inputs)
+        return list(self.stored.values())[self.once - 1]
     
     @abstractmethod
     def dict_forward(self, inputs):

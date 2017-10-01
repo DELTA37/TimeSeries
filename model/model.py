@@ -24,13 +24,9 @@ class Net(BaseNet):
     def get_outputs(self):
         return {'label' : Variable(torch.randn(*(Net.BATCH + Net.LABEL_SHAPE)), requires_grad=False)}
 
-    def forward(self, x):
+    def dict_forward(self, x):
         x = self.lin1(x['image'])
-        return x
-
-    def backward(self, grad):
-        grad = self.conv1.backward(grad)
-        return grad
+        return {'label' : x}
 
     def get_criterion(self, params):
         class Loss(nn.Module):
@@ -38,8 +34,7 @@ class Net(BaseNet):
                 super(Loss, self).__init__()
                 self.aggr_loss = torch.nn.MSELoss() # you can provide your own loss function
             def forward(self, y_pred, y):
-                #return self.aggr_loss.forward(y_pred['label'], y['label']) # for a dict values passed to __call__
-                return self.aggr_loss.forward(y_pred, y)
+                return self.aggr_loss.forward(y_pred['label'], y['label']) # for a dict values passed to __call__
             def backward(self):
                 return self.aggr_loss.backward()
         return Loss()
