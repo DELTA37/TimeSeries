@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from base.layers import *
 from collections import OrderedDict
+from abc import *
 
 class BaseNet(nn.Module):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
@@ -38,18 +39,27 @@ class BaseNet(nn.Module):
             return res
         else:
             return list()
-    
+   
+    @abstractmethod
     def get_criterion(self, params):
-        pass
+        pass 
+
+    def __call__(self, x):
+        nn.Module.__call__(self, x)
+        return self.stored
 
     def forward(self, inputs):
+        self.stored = self.dict_forward(inputs)
+        return list(self.stored.values())[0]
+    
+    @abstractmethod
+    def dict_forward(self, inputs):
         pass
 
-    def backward(self, grads):
-        pass
-
+    @abstractmethod
     def get_inputs(self):
-        return dict()
+        pass
 
+    @abstractmethod
     def get_outputs(self):
-        return dict()
+        pass

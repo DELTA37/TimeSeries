@@ -100,9 +100,7 @@ for ep in range(start_epoch, start_epoch + N):
     t = 0
     for data in data_loader:
         x = dict()
-        ''' # for a dict values passed to __call__
         y = dict()
-        '''
         for key, var in inputs.items():
             if key not in data.keys():
                 print("ERROR: In data there is no key - {}".format(key))
@@ -112,7 +110,6 @@ for ep in range(start_epoch, start_epoch + N):
                 print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
                 assert(0)
             x[key] = Variable(data[key], requires_grad=False)
-        ''' # for a dict values passed to __call__
         for key, var in outputs.items():
             if key not in data.keys():
                 print("ERROR: In data there is no key - {}".format(key))
@@ -122,8 +119,6 @@ for ep in range(start_epoch, start_epoch + N):
                 print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
                 assert(0)
             y[key] = Variable(data[key], requires_grad=False)
-        '''
-        y = Variable(data['label'], requires_grad=False)
 
         def closure(): # special opt methods
             if not hasattr(closure, 'once'): 
