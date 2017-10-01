@@ -20,6 +20,7 @@ class Layer:
         else:
             return list()
 
+
 class Conv1dLayer(nn.Conv1d, Layer):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
         nn.Conv1d.__init__(self, *args, **kwargs)
@@ -41,7 +42,4 @@ class SigmoidLayer(nn.Sigmoid, Layer):
         Layer.__init__(self, trainable, restore)
 
 
-'''
-etc
-'''
-
+Layer.AccessableMethods = dict({cl.__name__ : cl for cl in Layer.__subclasses__()})

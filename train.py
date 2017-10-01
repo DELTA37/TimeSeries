@@ -34,7 +34,7 @@ opt_name = args.opt[0]
 net_model = Net(config)
 net_reader = NetReader(config)
 net_model.train(mode=True)
-
+exit()
 data_loader = net_reader.getDataLoader()
 inputs = net_model.get_inputs()
 outputs = net_model.get_outputs()
