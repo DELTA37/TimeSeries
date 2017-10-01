@@ -33,21 +33,22 @@ start_epoch = 0
 opt_name = args.opt[0]
 
 ### model and reader
-model = Net()
-reader = NetReader(config)
+net_model = Net()
+net_reader = NetReader(config)
 
-data_loader = reader.getDataLoader()
-inputs = model.get_inputs()
-criterion = model.get_criterion(config)
+data_loader = net_reader.getDataLoader()
+inputs = net_model.get_inputs()
+outputs = net_model.get_outputs()
+criterion = net_model.get_criterion(config)
 
 ### trainable and restorable
-trainable_var = OrderedDict(model.get_trainable())
-untrainable_var = OrderedDict(model.named_parameters())
+trainable_var = OrderedDict(net_model.get_trainable())
+untrainable_var = OrderedDict(net_model.named_parameters())
 
 for key, val in trainable_var.items():
     del untrainable_var[key]
 
-restore_var = OrderedDict(model.get_restorable())
+restore_var = OrderedDict(net_model.get_restorable())
 loss = 0
 
 ### optimizer detection
@@ -73,7 +74,7 @@ else:
     print("ERROR:")
     print("There is no optimizer named {}".format(opt_name))
 
-### restoraion TODO restore_dir and restore_file
+### restoraion 
 if config['restore']:
     restore_file = os.path.join(config['restore_path'], config['restore_file'])
     if os.path.isfile(restore_file):
@@ -81,7 +82,7 @@ if config['restore']:
 
         checkpoint = torch.load(restore_file)
         start_epoch = checkpoint['epoch']
-        model.load_state_dict(checkpoint['state_dict'])
+        net_model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
 
         print("=> loaded checkpoint '{}' (epoch {})".format(start_epoch, checkpoint['epoch']))
@@ -90,7 +91,7 @@ if config['restore']:
         print("=> no checkpoint found at '{}'".format(restore_file))
         exit()
 else:
-    if not os.path.isfile(config['restore_path']):
+    if not os.path.isdir(config['restore_path']):
         os.mkdir(config['restore_path'])
 
 ### training
@@ -99,6 +100,9 @@ for ep in range(start_epoch, start_epoch + N):
     t = 0
     for data in data_loader:
         x = dict()
+        ''' # for a dict values passed to __call__
+        y = dict()
+        '''
         for key, var in inputs.items():
             if key not in data.keys():
                 print("ERROR: In data there is no key - {}".format(key))
@@ -107,9 +111,19 @@ for ep in range(start_epoch, start_epoch + N):
                 print("ERROR: Shapes of inputs and data different at {}".format(key))
                 print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
                 assert(0)
-            x[key] = Variable(data[key])
-
-        y = Variable(data['label']) # TODO change it to get_output()
+            x[key] = Variable(data[key], requires_grad=False)
+        ''' # for a dict values passed to __call__
+        for key, var in outputs.items():
+            if key not in data.keys():
+                print("ERROR: In data there is no key - {}".format(key))
+                assert(0)
+            if data[key].numpy().shape != var.data.numpy().shape:
+                print("ERROR: Shapes of inputs and data different at {}".format(key))
+                print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
+                assert(0)
+            y[key] = Variable(data[key], requires_grad=False)
+        '''
+        y = Variable(data['label'], requires_grad=False)
 
         def closure(): # special opt methods
             if not hasattr(closure, 'once'): 
@@ -120,7 +134,8 @@ for ep in range(start_epoch, start_epoch + N):
                 closure.once = 1
 
             optimizer.zero_grad()
-            y_pred = model(x)
+
+            y_pred = net_model(x)
             
             loss = criterion(y_pred, y)
 
@@ -132,7 +147,7 @@ for ep in range(start_epoch, start_epoch + N):
 
                 d = {
                     'epoch' : ep + 1,
-                    'state_dict' : model.get_restorable(),
+                    'state_dict' : net_model.get_restorable(),
                     'optimizer' : optimizer.state_dict()
                 }
                 save_checkpoint(d, config['restore_path'], ep, t)

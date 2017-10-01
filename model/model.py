@@ -8,7 +8,9 @@ from base.layers import *
 from base.network import BaseNet
 
 class Net(BaseNet):
-    IMAGE_SHAPE = [10, 784]
+    IMAGE_SHAPE = [784,]
+    LABEL_SHAPE = [1,]
+    BATCH       = [10,]
     def __init__(self, *args, **kwargs):
         super(Net, self).__init__(*args, **kwargs)
         '''
@@ -17,17 +19,30 @@ class Net(BaseNet):
         self.lin1 = LinearLayer(784, 1)
 
     def get_inputs(self):
-        return {'image' : Variable(torch.randn(*Net.IMAGE_SHAPE), requires_grad=False)}
-    
+        return {'image' : Variable(torch.randn(*(Net.BATCH + Net.IMAGE_SHAPE)), requires_grad=False)}
+   
+    def get_outputs(self):
+        return {'label' : Variable(torch.randn(*(Net.BATCH + Net.LABEL_SHAPE)), requires_grad=False)}
+
     def forward(self, x):
         x = self.lin1(x['image'])
         return x
+
     def backward(self, grad):
         grad = self.conv1.backward(grad)
         return grad
 
     def get_criterion(self, params):
-        return torch.nn.MSELoss() 
+        class Loss(nn.Module):
+            def __init__(self):
+                super(Loss, self).__init__()
+                self.aggr_loss = torch.nn.MSELoss() # you can provide your own loss function
+            def forward(self, y_pred, y):
+                #return self.aggr_loss.forward(y_pred['label'], y['label']) # for a dict values passed to __call__
+                return self.aggr_loss.forward(y_pred, y)
+            def backward(self):
+                return self.aggr_loss.backward()
+        return Loss()
 
 
 

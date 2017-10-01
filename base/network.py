@@ -3,7 +3,6 @@ import torch.nn as nn
 from base.layers import *
 from collections import OrderedDict
 
-
 class BaseNet(nn.Module):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
         super(BaseNet, self).__init__(*args, **kwargs)
@@ -50,4 +49,7 @@ class BaseNet(nn.Module):
         pass
 
     def get_inputs(self):
+        return dict()
+
+    def get_outputs(self):
         return dict()
