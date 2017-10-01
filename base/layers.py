@@ -35,6 +35,11 @@ class LinearLayer(nn.Linear, Layer):
         nn.Linear.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
+class SigmoidLayer(nn.Sigmoid, Layer):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Sigmoid.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
 
 '''
 etc

@@ -13,7 +13,6 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('lr', type=float, nargs=1, help='learning rate')
 parser.add_argument('auto_save', type=int, nargs=1, help='time interval saving model')
-parser.add_argument('num_steps', type=int, nargs=1, help='number of steps')
 parser.add_argument('num_epoch', type=int, nargs=1, help='number of epochs')
 parser.add_argument('opt', type=str, nargs=1, help='optimizer')
 parser.add_argument('config', type=str, nargs=1, help='dataset configuration')
@@ -25,7 +24,6 @@ def save_checkpoint(state, path, epoch=0, step=0):
     torch.save(state, filename)
    
 lr = args.lr[0]
-n = args.num_steps[0]
 N = args.num_epoch[0]
 auto_save = args.auto_save[0]
 config = json.load(open(args.config[0]))
@@ -33,7 +31,7 @@ start_epoch = 0
 opt_name = args.opt[0]
 
 ### model and reader
-net_model = Net()
+net_model = Net(config)
 net_reader = NetReader(config)
 
 data_loader = net_reader.getDataLoader()

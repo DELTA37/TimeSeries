@@ -5,10 +5,11 @@ from collections import OrderedDict
 from abc import *
 
 class BaseNet(nn.Module):
-    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+    def __init__(self, params, *args, trainable=True, restore=True, **kwargs):
         super(BaseNet, self).__init__(*args, **kwargs)
-        self.trainable = trainable
-        self.restore   = restore
+        self.trainable  = trainable
+        self.restore    = restore
+        self.batch_size = [params['batch_size'],]
 
     def get_trainable(self):
         if self.trainable:

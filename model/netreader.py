@@ -4,9 +4,9 @@ from torch.utils.data import Dataset
 import torch
 
 class MyDataset(Dataset):
-    def __init__(self, transform):
+    def __init__(self, data_path, transform):
         super(MyDataset, self).__init__()
-        self.aggr_dataset = MNIST('./', download=True, train=True, transform=transform)
+        self.aggr_dataset = MNIST(data_path, download=True, train=True, transform=transform)
     def __len__(self):
         return self.aggr_dataset.__len__()
     def __getitem__(self, idx):
@@ -19,4 +19,4 @@ class MyDataset(Dataset):
 class NetReader(Reader):
     def __init__(self, params):
         super(NetReader, self).__init__(params)
-        self.dataset = MyDataset(self.transform) 
+        self.dataset = MyDataset(params['data_path'], self.transform) 

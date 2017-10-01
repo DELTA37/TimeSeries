@@ -1,5 +1,5 @@
 {
-  "data_path"     : "./",
+  "data_path"     : "./data",
   "restore_path"  : "./restore",
   "restore_file"  : "checkpoint.ckpt.tar",
   "restore"       : false,

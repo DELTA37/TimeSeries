@@ -10,22 +10,23 @@ from base.network import BaseNet
 class Net(BaseNet):
     IMAGE_SHAPE = [784,]
     LABEL_SHAPE = [1,]
-    BATCH       = [10,]
-    def __init__(self, *args, **kwargs):
-        super(Net, self).__init__(*args, **kwargs)
+    def __init__(self, params, *args, **kwargs):
+        super(Net, self).__init__(params, *args, **kwargs)
         '''
         description of your model
         '''
         self.lin1 = LinearLayer(784, 1)
+        self.sig1 = SigmoidLayer()
 
     def get_inputs(self):
-        return {'image' : Variable(torch.randn(*(Net.BATCH + Net.IMAGE_SHAPE)), requires_grad=False)}
+        return {'image' : Variable(torch.randn(*(self.batch_size + Net.IMAGE_SHAPE)), requires_grad=False)}
    
     def get_outputs(self):
-        return {'label' : Variable(torch.randn(*(Net.BATCH + Net.LABEL_SHAPE)), requires_grad=False)}
+        return {'label' : Variable(torch.randn(*(self.batch_size + Net.LABEL_SHAPE)), requires_grad=False)}
 
     def dict_forward(self, x):
         x = self.lin1(x['image'])
+        x = self.sig1(x)
         return {'label' : x}
 
     def get_criterion(self, params):
