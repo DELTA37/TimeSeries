@@ -56,10 +56,11 @@ class Const:
         self.val = np.array(val)
 
 class Func:
-    def __init__(self, name, shape_in=None, shape_out=None, body=[]):
+    def __init__(self, name, shape_in=None, shape_out=None, arg_names=[], body=[]):
         self.name = name
         self.shape_in = shape_in
         self.shape_out = shape_out
+        self.arg_names = arg_names
         self.body = body
 
 class Chain:
@@ -77,13 +78,37 @@ class Expr:
 class StateMachine: # fabric pattern for previous small classes
 
     @staticmethod
-    def rawParse(self, expr_str):
+    def rawParse(expr_str):
         return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split('->')))
     
     @staticmethod
-    def funcLeftParse(self, expr_str):
-        #TODO
-        pass
+    def argParse(expr_str):
+        return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split(',')))
+
+    @staticmethod
+    def funcLeftParse(expr_str):
+        expr_str = expr_str.replace(' ', '')
+        name = expr_str[:expr_str.find('(')]
+        expr_str = expr_str[expr_str.find('(')+1:-1]
+        arg_names = StateMachine.argParse(expr_str)
+        return (name, arg_names)
+    
+    @staticmethod
+    def funcRightParse(expr_str):
+        expr_str = expr_str.replace(' ', '')
+        name = expr_str[:expr_str.find('(')]
+        expr_str = expr_str[expr_str.find('(')+1:-1]
+        arg_names = StateMachine.argParse(expr_str)
+        lst1 = []
+        lst2 = dict()
+        for i in range(len(args_names)):
+            if args_names[i].find('=') == -1:
+                lst1.append(args_names[i])
+            else:
+                var_name = args_names[:args_names[i].find('=')]
+                var_val = args_name[args_names[i].find('=')+1:]
+                lst2[var_name] = var_val
+        return (name, lst1, lst2)
 
     def __init__(self, params):
         self.vars = dict({'input' : Var('input'), 'output' : Var('output')})
