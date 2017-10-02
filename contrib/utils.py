@@ -87,7 +87,7 @@ class Expr:
 
 @SingletonDecorator
 class StateMachine: # fabric pattern for previous small classes
-    
+# parse family
     @staticmethod
     def rawParse(expr_str):
         return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split('->')))
@@ -120,8 +120,29 @@ class StateMachine: # fabric pattern for previous small classes
                 var_val = args_name[args_names[i].find('=')+1:]
                 lst2[var_name] = var_val
         return (name, lst1, lst2)
+    
+    @staticmethod
+    def funcBodyParse(expr_str):
+        raw = StateMachine.rawParse(expr_str)
+        for i in range(len(raw)):
+            node = StateMachine.funcRightParse(raw[i])
+            if node[0] == '':
+                # TODO check node[2] empty, node[1] consist in numbers, in_shape = node[1]
+                pass
 
+# constructor
     def __init__(self, params):
+        '''
+        @param self.vars    : all created variables
+        @type  self.vars    : dict(str : Var)
+
+        @param self.consts  : all created constants
+        @type  self.consts  : dict(str : Const)
+
+        @param self.funcs   : all created functions
+        @type  self.funcs   : dict(str : Func)
+
+        '''
         self.vars = dict({'input' : Var('input'), 'output' : Var('output')})
         self.consts = dict()
         self.funcs = dict('model' : Func('model'))
@@ -155,7 +176,11 @@ class StateMachine: # fabric pattern for previous small classes
         self.exprs.append(Expr(var_name, chain_id))
 
 # is_correct family
-    def is_correctDependies(self, 
+    def is_correctDependies(self, cur_var, cur_chain_id):
+        '''
+        @return : True if all vars and functions is initialized at previous expres, elsewhere False
+        @rtype  : bool
+        '''
 
     def is_correctFuncRight(self, name, args, kwargs):
         '''
