@@ -127,8 +127,14 @@ class StateMachine: # fabric pattern for previous small classes
         for i in range(len(raw)):
             node = StateMachine.funcRightParse(raw[i])
             if node[0] == '':
-                # TODO check node[2] empty, node[1] consist in numbers, in_shape = node[1]
-                pass
+                if i == 0:
+                    shape_in = list(eval(node[1]))
+                elif i == len(raw) - 1:
+                    shape_out = list(eval(node[1]))
+                else:
+                    raise NotImplemented
+
+
 
 # constructor
     def __init__(self, params):
