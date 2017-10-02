@@ -131,7 +131,25 @@ class StateMachine: # fabric pattern for previous small classes
     def setFunction(self, name, shape_in=None, shape_out=None, decl=[]):
         assert(name not in self.funcs.keys())
         self.funcs[name] = Func(name, shape_in, shape_out, decl)
+    
+# is_correct family
+    def is_correctFuncRight(self, name, args, kwargs):
+        '''
+        name    : str
+        args    : list
+        kwargs  : dict
+        '''
+        if name in self.funcs.keys():
+            lst = args + list(kwargs.keys())
+            #TODO
+            self.funcs[name].args
+            return True
+        elif name in Layer.AccessableMethods.keys():
+            return True
+        else:
+            return False
 
+# deduce family
     def deduceType(self, expr_str):
         expr_str = expr_str.replace(' ', '')
         if expr_str in self.vars.keys():
