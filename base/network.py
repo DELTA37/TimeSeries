@@ -6,12 +6,32 @@ from abc import *
 
 class BaseNet(nn.Module):
     def __init__(self, params, *args, trainable=True, restore=True, **kwargs):
+        '''
+        @param     trainable            : if trainable = False, then it's learning rate = 0
+        @type      trainable            : bool
+
+        @param     restore              : if restore = True, then this net will record into file and can be read from file
+        @type      restore              : bool
+
+        @param     params               : configuration of our network
+        @type      params               : dict
+
+        @param     params['batch_size'] : batch size 
+        @type      params['batch_size'] : int
+
+        @return                         : constructor
+        @rtype                          : None 
+        '''
         super(BaseNet, self).__init__(*args, **kwargs)
         self.trainable  = trainable
         self.restore    = restore
         self.batch_size = [params['batch_size'],]
 
     def get_trainable(self):
+        '''
+        @return                         : list of all variables which we want to train
+        @rtype                          : list
+        '''
         if self.trainable:
             res = list()
             for layer in dir(self):
@@ -27,6 +47,10 @@ class BaseNet(nn.Module):
             return list()
 
     def get_restorable(self):
+        '''
+        @return                         : list of all variables which we want to save and restore
+        @rtype                          : list
+        '''
         if self.restore:
             res = list()
             for layer in dir(self):

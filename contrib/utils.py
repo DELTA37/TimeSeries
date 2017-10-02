@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 from base.layers import Layer
 import ast
+import numpy as np
 
 class SingletonDecorator:
     def __init__(self, cls):
@@ -46,13 +47,23 @@ model : function
 
 class Var:
     def __init__(self, name, shape=None, chain_id=-1):
-        self.name = name
-        self.shape = shape
-        chain_id = chain_id
+        '''
+        @param  name        : name of variable
+        @type   name        : str
+        
+        @param  shape       : shape of variable 
+        @type   shape       : tuple, list
+
+        @param  chain_id    : chain which associate with this variable
+        @type   chain_id    : int
+        '''
+        self.name = str(name)
+        self.shape = list(shape)
+        chain_id = int(chain_id)
 
 class Const:
     def __init__(self, name, val):
-        self.name = name
+        self.name = str(name)
         self.val = np.array(val)
 
 class Func:
@@ -70,13 +81,13 @@ class Chain:
         self.body = body
 
 class Expr:
-    def __init__(self, var, chain_id):
-        self.var = var
+    def __init__(self, var_name, chain_id):
+        self.var_name = var_name
         self.chain_id = chain_id
 
 @SingletonDecorator
 class StateMachine: # fabric pattern for previous small classes
-
+    
     @staticmethod
     def rawParse(expr_str):
         return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split('->')))
@@ -115,11 +126,12 @@ class StateMachine: # fabric pattern for previous small classes
         self.consts = dict()
         self.funcs = dict('model' : Func('model'))
         self.chains = dict()
-        self.exprs = dict()
+        self.exprs = []
 
-    def addVariable(self, name, shape=None, chain_id=-1):
+# set family
+    def setVariable(self, name, shape=None, chain_id=-1):
         assert(name not in self.vars.keys())
-        self.vars[name] = {'shape' : shape, 'chain_id' : chain_id}
+        self.vars[name] = Var(name, shape, chain_id)
 
     def setShape(self, name, shape):
         if name in self.vars.keys():
@@ -132,7 +144,19 @@ class StateMachine: # fabric pattern for previous small classes
         assert(name not in self.funcs.keys())
         self.funcs[name] = Func(name, shape_in, shape_out, decl)
     
+    def setChain(self, var_input, body=[]):
+        chain_id = len(self.chains)
+        self.chains[chain_id] = Chain(chain_id, var_input, body)
+
+    def setExpr(self, var_name, chain_id):
+        assert(self.vars[var_name].chain_id == -1)
+        self.vars[var_name].chain_id = chain_id
+        # TODO deduce shape
+        self.exprs.append(Expr(var_name, chain_id))
+
 # is_correct family
+    def is_correctDependies(self, 
+
     def is_correctFuncRight(self, name, args, kwargs):
         '''
         name    : str
