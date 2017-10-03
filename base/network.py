@@ -26,7 +26,7 @@ class BaseNet(nn.Module):
         super(BaseNet, self).__init__(*args, **kwargs)
         self.trainable  = trainable
         self.restore    = restore
-        self.params     = depr.DeprecateWrapper(params, ['batch_size'])
+        self.params     = depr.DeprecateWrapper(params, params['deprecate'])
 
     def get_trainable(self):
         '''
