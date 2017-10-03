@@ -8,12 +8,18 @@ from base.layers import *
 from base.network import BaseNet
 
 class Net(BaseNet):
+    '''
+    @info this place is for global parameter (hyperparameters) definition
+    '''
     IMAGE_SHAPE = [784,]
     LABEL_SHAPE = [1,]
     def __init__(self, params, *args, **kwargs):
         super(Net, self).__init__(params, *args, **kwargs)
         '''
-        description of your model
+        @info           this place is for model architecture assignment
+
+        @param params : global parameters model configuration from config file
+        @type  params : dict()
         '''
         self.lin1 = LinearLayer(784, 1)
         self.sig1 = SigmoidLayer()
