@@ -67,7 +67,7 @@ class Const:
         self.val = np.array(val)
 
 class Func:
-    def __init__(self, name, shape_in=None, shape_out=None, arg_names=[], body=[]):
+    def __init__(self, name, shape_in=None, shape_out=None, arg_names=[], body=[], shapes=dict()):
         '''
         @param name : name of function
         @type  name : str
@@ -76,35 +76,49 @@ class Func:
         @type  shape_in : list(list())
 
         @param shape_out : shapes of output tensors
-        @type  shape_in  : list(list)
+        @type  shape_out  : list()
         '''
         self.name = name
+        self.arg_names = arg_names
+        self.body = body
+        self.shape_out = shape_out
+        self.shapes = shapes
         if shape_in == None:
             self.shape_in = [[]] * len(arg_names)
         else:
             self.shape_in = shape_in
-        assert(len(self.shape_in) == len(arg_names))
-        if shape_in == None:
-            self.shape_out = [[]] * shape_utils.deduce_shape(self.shape_in, )
-        else:
-            self.shape_out = shape_out
 
-        self.arg_names = arg_names
-        self.body = body
+        assert(len(self.shape_in) == len(arg_names))
+
 
 class Chain:
-    def __init__(self, chain_id, var_input, body=[]):
+    def __init__(self, chain_id, var_input, body=[], shapes=dict()):
         self.chain_id = chain_id
         self.var_input = var_input
         self.body = body
+        self.shapes = shapes
 
 class Expr:
     def __init__(self, var_name, chain_id):
         self.var_name = var_name
         self.chain_id = chain_id
 
+
 @SingletonDecorator
 class StateMachine: # fabric pattern for previous small classes
+# string to object functions
+    @staticmethod
+    def str2tuple(s):
+        s = s.replace(' ', '')
+        if s[0] != '(' and s[-1] != ')':
+            return False
+        s = s[1:-1]
+        s = s.split(',')
+        try:
+            return list(map(lambda x : int(x), s))
+        except:
+            return False
+         
 # parse family
     @staticmethod
     def rawParse(expr_str):
@@ -112,7 +126,8 @@ class StateMachine: # fabric pattern for previous small classes
     
     @staticmethod
     def argParse(expr_str):
-        return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split(',')))
+        expr_str = expr_str.replace(' ', '')
+        return list(expr_str.split(','))
 
     @staticmethod
     def funcLeftParse(expr_str):
@@ -205,6 +220,8 @@ class StateMachine: # fabric pattern for previous small classes
         @return : True if all vars and functions is initialized at previous expres, elsewhere False
         @rtype  : bool
         '''
+        #TODO
+        pass
 
     def is_correctFuncRight(self, name, args, kwargs):
         '''
@@ -223,18 +240,24 @@ class StateMachine: # fabric pattern for previous small classes
             return False
 
 # deduce family
-    def deduceType(self, expr_str):
-        expr_str = expr_str.replace(' ', '')
-        if expr_str in self.vars.keys():
-            return 'Variable'
-        elif expr_str in self.consts.keys():
-            return 'Constant'
-        else:
-            # TODO
-            raise NotImplemented
+    def deduceLeftType(self, lvalue, rvalue):
+        rtype = deduceRightType(rvalue)
+        if rtype == 'Shape':
+            return ['VariableShapeAssignment', lvalue]
+        elif rtype == 'Chain':
+            return ['VariableChainAssighment', lvalue]
 
+        if lvalue[:lvalue.find('(')] != -1:
+            return ['FunctionAssignment', lvalue[:lvalue.find('(')], lvalue[lvalue.find('('):]]
+        raise SyntaxError
+
+    def deduceRightType(self, rvalue):
+        pass
+        
     def parseExpr(self, expr_str):
+        expr_str = expr_str.replace(' ', '')
         lvalue = expr_str[:expr_str.find('=')]
         rvalue = expr_str[expr_str.find('=')+1:]
+
         #TODO
         pass
