@@ -122,7 +122,8 @@ class StateMachine: # fabric pattern for previous small classes
 # parse family
     @staticmethod
     def rawParse(expr_str):
-        return list(map(lambda x : str.replace(x, ' ', ''), expr_str.split('->')))
+        expr_str = expr_str.replace(' ', '')
+        return list(expr_str.split('->'))
     
     @staticmethod
     def argParse(expr_str):
@@ -156,6 +157,7 @@ class StateMachine: # fabric pattern for previous small classes
     
     @staticmethod
     def funcBodyParse(expr_str):
+        # TODO
         raw = StateMachine.rawParse(expr_str)
         for i in range(len(raw)):
             node = StateMachine.funcRightParse(raw[i])
@@ -242,22 +244,33 @@ class StateMachine: # fabric pattern for previous small classes
 # deduce family
     def deduceLeftType(self, lvalue, rvalue):
         rtype = deduceRightType(rvalue)
-        if rtype == 'Shape':
-            return ['VariableShapeAssignment', lvalue]
-        elif rtype == 'Chain':
-            return ['VariableChainAssighment', lvalue]
-
-        if lvalue[:lvalue.find('(')] != -1:
-            return ['FunctionAssignment', lvalue[:lvalue.find('(')], lvalue[lvalue.find('('):]]
+        if rtype[0] == 'Shape':
+            return ['VariableShapeAssignment', lvalue, rtype]
+        elif rtype[0] == 'Chain':
+            return ['VariableChainAssighment', lvalue, rtype]
+        if lvalue[:lvalue.find('(')] != -1 or rtype[0] == 'Function':
+            return ['FunctionAssignment', lvalue[:lvalue.find('(')], lvalue[lvalue.find('('):], rtype]
         raise SyntaxError
 
     def deduceRightType(self, rvalue):
-        pass
-        
+        tpl = StateMachine.str2tuple(rvalue)
+        if tpl:
+            return ('Shape', tpl)
+
+        body = StateMachine.rawParse(rvalue)
+        tpl = StateMachine.str2tuple(body[0])
+        if tpl:
+            return ('Function', body)
+        if body[0] in self.vars.keys():
+            return ('Chain', body)
+        if body[0][0:body[0].find('(')] in self.vars.keys():
+            return ('Function', body)
+        raise SyntaxError
+
     def parseExpr(self, expr_str):
         expr_str = expr_str.replace(' ', '')
         lvalue = expr_str[:expr_str.find('=')]
         rvalue = expr_str[expr_str.find('=')+1:]
-
+        types = deduceLeftType(lvalue, rvalue)
         #TODO
         pass
