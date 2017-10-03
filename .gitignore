@@ -3,3 +3,6 @@ data*
 summary
 restore
 results
+*__pycache__
+*.gk
+*.json

@@ -3,6 +3,19 @@ import progressbar
 import os
 
 def dataset_install(url, path, chunk_size=1000):
+    '''
+    @param url          : url address of dataset
+    @type  url          : str
+
+    @param path         : where locate downloaded dataset
+    @type  path         : str
+
+    @param chunk_size   : Optional parameter to download dataset part by part
+    @type  chunk_size   : int
+    
+    @return             : Install dataset into path
+    @rtype              : None
+    '''
     r = requests.get(url, stream=True)
     chunk_size = int(chunk_size)
     file_size = int(r.headers['Content-Length'])

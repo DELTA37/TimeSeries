@@ -67,6 +67,13 @@ class BaseNet(nn.Module):
    
     @abstractmethod
     def get_criterion(self, params):
+        '''
+        @param      params : specify loss parameters
+        @type       params : dict()
+
+        @return            : loss function for model
+        @rtype             : callable
+        '''
         pass 
 
     def __call__(self, x):

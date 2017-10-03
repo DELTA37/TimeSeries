@@ -68,9 +68,27 @@ class Const:
 
 class Func:
     def __init__(self, name, shape_in=None, shape_out=None, arg_names=[], body=[]):
+        '''
+        @param name : name of function
+        @type  name : str
+
+        @param shape_in : shape, which must be substitude into function, None in component if we don't know, len(shape_in) == len(arg_names)
+        @type  shape_in : list(list())
+
+        @param shape_out : shapes of output tensors
+        @type  shape_in  : list(list)
+        '''
         self.name = name
-        self.shape_in = shape_in
-        self.shape_out = shape_out
+        if shape_in == None:
+            self.shape_in = [[]] * len(arg_names)
+        else:
+            self.shape_in = shape_in
+        assert(len(self.shape_in) == len(arg_names))
+        if shape_in == None:
+            self.shape_out = [[]] * shape_utils.deduce_shape(self.shape_in, )
+        else:
+            self.shape_out = shape_out
+
         self.arg_names = arg_names
         self.body = body
 

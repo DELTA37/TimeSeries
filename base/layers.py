@@ -4,10 +4,24 @@ from collections import OrderedDict
 
 class Layer:
     def __init__(self, trainable, restore):
+        '''
+        @param trainable : specify will we train this layer 
+        @type  trainable : bool
+        
+        @param restore   : specify will we save and restore this layer
+        @type  restore   : bool
+
+        @return          : constructor
+        @rtype           : None
+        '''
         self.trainable = trainable
         self.restore   = restore
 
     def get_trainable(self):
+        '''
+        @return     : list of parameters which specified to train in this layer
+        @rtype      : list(torch.nn.Parameter)
+        '''
         if self.trainable:
             print(super(Layer, self))
             return nn.Module.named_parameters(self)
@@ -15,6 +29,10 @@ class Layer:
             return list()
 
     def get_restorable(self):
+        '''
+        @return     : list of parameters which specified to save and restore in this layer
+        @rtype      : list(torch.nn.Parameter)
+        '''
         if self.restore:
             return nn.Module.named_parameters(self)
         else:
