@@ -16,7 +16,7 @@ class Net(BaseNet):
     def __init__(self, params, *args, **kwargs):
         super(Net, self).__init__(params, *args, **kwargs)
         '''
-        @info         :  this place is for model architecture assignment
+        @info         : this place is for model architecture assignment, and use self.params and self parameters in model definition
 
         @param params : global parameters model configuration from config file
         @type  params : dict()
@@ -24,9 +24,10 @@ class Net(BaseNet):
         @return       : constructor
         @rtype        : None
         '''
+        self.lin  = LinearLayer(self.params['batch_size'], 1)
         self.lin1 = LinearLayer(784, 1)
         self.sig1 = SigmoidLayer()
-
+        
     def get_inputs(self):
         '''
         @info         : this function is for defining inputs of model, there names and shapes
@@ -34,7 +35,7 @@ class Net(BaseNet):
         @return       : name maped to variable which contain inside a tensor needed shape
         @rtype        : dict(str : torch.autograd.Variable(torch.FloatTensor(), requires_grad=False))  
         '''
-        return {'image' : Variable(torch.randn(*(self.batch_size + Net.IMAGE_SHAPE)), requires_grad=False)}
+        return {'image' : Variable(torch.randn(*([self.params['batch_size']] + Net.IMAGE_SHAPE)), requires_grad=False)}
    
     def get_outputs(self):
         '''
@@ -43,7 +44,7 @@ class Net(BaseNet):
         @return       : name maped to variable which contain inside a tensor needed shape
         @rtype        : dict(str : torch.autograd.Variable(torch.FloatTensor(), requires_grad=False))  
         '''
-        return {'label' : Variable(torch.randn(*(self.batch_size + Net.LABEL_SHAPE)), requires_grad=False)}
+        return {'label' : Variable(torch.randn(*([self.params['batch_size']] + Net.LABEL_SHAPE)), requires_grad=False)}
 
     def dict_forward(self, x):
         '''

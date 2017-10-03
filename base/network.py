@@ -3,6 +3,7 @@ import torch.nn as nn
 from base.layers import *
 from collections import OrderedDict
 from abc import *
+import base.deprecater as depr
 
 class BaseNet(nn.Module):
     def __init__(self, params, *args, trainable=True, restore=True, **kwargs):
@@ -25,7 +26,7 @@ class BaseNet(nn.Module):
         super(BaseNet, self).__init__(*args, **kwargs)
         self.trainable  = trainable
         self.restore    = restore
-        self.batch_size = [params['batch_size'],]
+        self.params     = depr.DeprecateWrapper(params, ['batch_size'])
 
     def get_trainable(self):
         '''
