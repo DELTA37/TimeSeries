@@ -70,4 +70,28 @@ class Parser:
                 df = df.append(pd.DataFrame(row_attr, columns=col_names), ignore_index=True)
             dfs.append(df)
         return dfs
-        
+    def iss_securities(self, security=None):
+        '''
+        @params     security    : concrete security
+        @type       security    : str
+        @return                 : sequrities market description
+        @rtype                  : pd.DataFrame()
+        '''
+        if security == None:
+            doc = requests.get('https://iss.moex.com/iss/securities.xml').content.decode()
+        else:
+            doc = requests.get('https://iss.moex.com/iss/securities/' + security + '.xml').content.decode()
+        return self.xml2pandas(doc)
+
+    def iss_securities_indices(self, security):
+        '''
+        @params     security    : concrete security
+        @type       security    : str
+        @return                 : list of indices which contain this security
+        @rtype                  : pd.DataFrame()
+        '''
+        doc = requests.get('https://iss.moex.com/iss/securities/' + security + '/indices.xml').content.decode()
+        return self.xml2pandas(doc)
+
+
+
