@@ -166,7 +166,6 @@ class StateMachine: # fabric pattern for previous small classes
                     raise NotImplemented
 
 
-
 # constructor
     def __init__(self, params):
         '''
@@ -188,18 +187,21 @@ class StateMachine: # fabric pattern for previous small classes
 
 # set family
     def setVariable(self, name, shape=None, chain_id=-1):
-        assert(name not in self.vars.keys())
+        if name in self.vars.keys() or name in self.consts.keys() or name in self.funcs.keys():
+            raise SyntaxError
         self.vars[name] = Var(name, shape, chain_id)
 
     def setShape(self, name, shape):
         if name in self.vars.keys():
-            assert(self.vars[name]['shape'] == None)
+            if self.vars[name]['shape'] != None:
+                raise SyntaxError
             self.vars[name]['shape'] = shape
         else:
             self.setVariable(name, shape)
 
     def setFunction(self, name, shape_in=None, shape_out=None, args_names=[], body=[], shapes=dict()):
-        assert(name not in self.funcs.keys())
+        if name in self.vars.keys() or name in self.consts.keys() or name in self.funcs.keys():
+            raise SyntaxError
         self.funcs[name] = Func(name, shape_in, shape_out, arg_names, body, shapes)
     
     def setChain(self, var_input, body=[]):
@@ -208,18 +210,39 @@ class StateMachine: # fabric pattern for previous small classes
         return chain_id
 
     def setExpr(self, var_name, chain_id):
-        assert(self.vars[var_name].chain_id == -1)
+        if self.vars[var_name].chain_id != -1:
+            raise SyntaxError
         self.vars[var_name].chain_id = chain_id
         self.exprs.append(Expr(var_name, chain_id))
-
+    
+    def setConst(self, name, val):
+        if name in self.vars.keys() or name in self.consts.keys() or name in self.funcs.keys():
+            raise SyntaxError
+        self.consts[name] = Const(name, val)
 # is_correct family
     def is_correctDependies(self, body, arg_list):
         '''
         @return : True if all vars and functions in body is initialized at previous steps, elsewhere False
         @rtype  : bool
         '''
-        #TODO
-        pass
+        for st in body:
+            st = st.replace(' ', '')
+            if StateMachine.str2tuple(st):
+                continue
+            if st.find('(') == -1:
+                return False
+            stname = st[:st.find('(')]
+            stargs = st[st.find('('):]
+            if stname not in self.funcs.keys() and stname not in Layer.AccessableMethods.keys():
+                return False
+            stparsed = StateMachine.argParse(stargs)
+            for arg in stparsed:
+                if str.isdigit(arg):
+                    continue
+                if not (arg in self.consts.keys() or arg in arg_list):
+                    return False
+        return True
+
     def is_correctChainBody(self, body):
         if not StateMachine.is_correctDependies(body, []):
             return False
@@ -233,9 +256,12 @@ class StateMachine: # fabric pattern for previous small classes
             if arg_list[i] in self.vars.keys() or str.isdigit(arg_list[i][0]):
                 return False
         return True
+
 # deduce family
     def deduceLeftType(self, lvalue, rvalue):
         rtype = deduceRightType(rvalue)
+        if rtype[0] == 'Const':
+            return ['ConstantAssignment', lvalue, rtype]
         if rtype[0] == 'Shape':
             return ['VariableShapeAssignment', lvalue, rtype]
         elif rtype[0] == 'Chain':
@@ -245,9 +271,13 @@ class StateMachine: # fabric pattern for previous small classes
         raise SyntaxError
 
     def deduceRightType(self, rvalue):
+        rvalue = rvalue.replace(' ', '')
         tpl = StateMachine.str2tuple(rvalue)
         if tpl:
             return ('Shape', tpl)
+        
+        if str.isdigit(rvalue):
+            return ('Const', int(rvalue))
 
         body = StateMachine.rawParse(rvalue)
         tpl = StateMachine.str2tuple(body[0])
@@ -273,7 +303,7 @@ class StateMachine: # fabric pattern for previous small classes
                 raise SyntaxError
             else:
                 StateMachine.setShape(lvalue, shape)
-        elif types[1] == 'VariableChainAssighment':
+        elif types[0] == 'VariableChainAssighment':
             lvalue      = types[1]
             body        = types[2][1]
             if not StateMachine.is_correctChainBody(body):
@@ -282,7 +312,7 @@ class StateMachine: # fabric pattern for previous small classes
             StateMachine.setVariable(lvalue, chain_id)
             StateMachine.setExpr(lvalue, chain_id)
 
-        elif types[2] == 'FunctionAssignment':
+        elif types[0] == 'FunctionAssignment':
             fname       = types[1]
             fargs       = StateMachine.argParse(types[2])
             body        = types[3][1]
@@ -295,4 +325,8 @@ class StateMachine: # fabric pattern for previous small classes
                 StateMachine.setFunction(fname, tpl, None, fargs, body, None)
             else:
                 StateMachine.setFunction(fname, None, None, fargs, body, None)
+        elif types[0] == 'ConstantAssignment':
+            name = types[1]
+            val  = types[2]
+            StateMachine.setConst(name, val)
 
