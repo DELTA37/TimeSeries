@@ -73,7 +73,7 @@ class Func:
         @type  name : str
 
         @param shape_in : shape, which must be substitude into function, None in component if we don't know, len(shape_in) == len(arg_names)
-        @type  shape_in : list(list())
+        @type  shape_in : list()
 
         @param shape_out : shapes of output tensors
         @type  shape_out  : list()
@@ -83,13 +83,7 @@ class Func:
         self.body = body
         self.shape_out = shape_out
         self.shapes = shapes
-        if shape_in == None:
-            self.shape_in = [[]] * len(arg_names)
-        else:
-            self.shape_in = shape_in
-
-        assert(len(self.shape_in) == len(arg_names))
-
+        self.shape_in = shape_in
 
 class Chain:
     def __init__(self, chain_id, var_input, body=[], shapes=dict()):
@@ -128,6 +122,8 @@ class StateMachine: # fabric pattern for previous small classes
     @staticmethod
     def argParse(expr_str):
         expr_str = expr_str.replace(' ', '')
+        if expr_str.find('(') > 0:
+            expr_str = expr_str[expr_str.find('('):expr_str.find(')')]
         return list(expr_str.split(','))
 
     @staticmethod
@@ -200,47 +196,43 @@ class StateMachine: # fabric pattern for previous small classes
             assert(self.vars[name]['shape'] == None)
             self.vars[name]['shape'] = shape
         else:
-            self.addVariable(name, shape)
+            self.setVariable(name, shape)
 
-    def setFunction(self, name, shape_in=None, shape_out=None, decl=[]):
+    def setFunction(self, name, shape_in=None, shape_out=None, args_names=[], body=[], shapes=dict()):
         assert(name not in self.funcs.keys())
-        self.funcs[name] = Func(name, shape_in, shape_out, decl)
+        self.funcs[name] = Func(name, shape_in, shape_out, arg_names, body, shapes)
     
     def setChain(self, var_input, body=[]):
         chain_id = len(self.chains)
         self.chains[chain_id] = Chain(chain_id, var_input, body)
+        return chain_id
 
     def setExpr(self, var_name, chain_id):
         assert(self.vars[var_name].chain_id == -1)
         self.vars[var_name].chain_id = chain_id
-        # TODO deduce shape
         self.exprs.append(Expr(var_name, chain_id))
 
 # is_correct family
-    def is_correctDependies(self, cur_var, cur_chain_id):
+    def is_correctDependies(self, body, arg_list):
         '''
-        @return : True if all vars and functions is initialized at previous expres, elsewhere False
+        @return : True if all vars and functions in body is initialized at previous steps, elsewhere False
         @rtype  : bool
         '''
         #TODO
         pass
-
-    def is_correctFuncRight(self, name, args, kwargs):
-        '''
-        name    : str
-        args    : list
-        kwargs  : dict
-        '''
-        if name in self.funcs.keys():
-            lst = args + list(kwargs.keys())
-            #TODO
-            self.funcs[name].args
-            return True
-        elif name in Layer.AccessableMethods.keys():
-            return True
-        else:
+    def is_correctChainBody(self, body):
+        if not StateMachine.is_correctDependies(body, []):
             return False
-
+        if body[0] not in self.vars.keys():
+            return False
+        return True
+    
+    def is_correctLeftFunctionArgs(self, arg_list):
+        for i in range(len(arg_list)):
+            arg_list[i] = arg_list[i].replace(' ', '')
+            if arg_list[i] in self.vars.keys() or str.isdigit(arg_list[i][0]):
+                return False
+        return True
 # deduce family
     def deduceLeftType(self, lvalue, rvalue):
         rtype = deduceRightType(rvalue)
@@ -272,5 +264,35 @@ class StateMachine: # fabric pattern for previous small classes
         lvalue = expr_str[:expr_str.find('=')]
         rvalue = expr_str[expr_str.find('=')+1:]
         types = deduceLeftType(lvalue, rvalue)
-        #TODO
-        pass
+        
+        if types[0] == 'VariableShapeAssignment':
+            lvalue      = types[1]
+            shp_str     = types[2][1]
+            shape       = str2tuple(shp_str)
+            if shape == False:
+                raise SyntaxError
+            else:
+                StateMachine.setShape(lvalue, shape)
+        elif types[1] == 'VariableChainAssighment':
+            lvalue      = types[1]
+            body        = types[2][1]
+            if not StateMachine.is_correctChainBody(body):
+                raise SyntaxError
+            chain_id = StateMachine.setChain(body[0], body)
+            StateMachine.setVariable(lvalue, chain_id)
+            StateMachine.setExpr(lvalue, chain_id)
+
+        elif types[2] == 'FunctionAssignment':
+            fname       = types[1]
+            fargs       = StateMachine.argParse(types[2])
+            body        = types[3][1]
+            if not StateMachine.is_correctDependies(body, fargs):
+                raise SyntaxError
+            if not StateMachine.is_correctLeftFunctionArgs(fargs):
+                raise SyntaxError
+            tpl = StateMachine.str2tuple(body[0])
+            if tpl:
+                StateMachine.setFunction(fname, tpl, None, fargs, body, None)
+            else:
+                StateMachine.setFunction(fname, None, None, fargs, body, None)
+
