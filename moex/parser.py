@@ -93,5 +93,67 @@ class Parser:
         doc = requests.get('https://iss.moex.com/iss/securities/' + security + '/indices.xml').content.decode()
         return self.xml2pandas(doc)
 
+    def iss_securities_aggregates(self, security):
+        '''
+        @params     security    : concrete security
+        @type       security    : str
+        @return                 : aggregates results of exchanges
+        @rtype                  : pd.DataFrame()
+        '''
+        doc = requests.get('https://iss.moex.com/iss/securities/' + security + '/aggregates.xml').content.decode()
+        return self.xml2pandas(doc)
+
+    def iss_securities_bondyields(self, security):
+        '''
+        @params     security    : concrete security
+        @type       security    : str
+        @return                 : The rates of return for bonds
+        @rtype                  : pd.DataFrame()
+        '''
+        doc = requests.get('https://iss.moex.com/iss/securities/' + security + '/bondyields.xml').content.decode()
+        return self.xml2pandas(doc)
+
+    def iss_engines(self, engine=None):
+        '''
+        @params     engine      : concrete security
+        @type       engine      : str
+
+        @return                 : engine description
+        @rtype                  : pd.DataFrame()
+        '''
+        if engine == None:
+            doc = requests.get('https://iss.moex.com/iss/engines.xml').content.decode()
+        else:
+            doc = requests.get('https://iss.moex.com/iss/engines/' + engine + '.xml').content.decode()
+        return self.xml2pandas(doc)
+    
+    def iss_currentprices(self):
+        doc = requests.get('https://iss.moex.com/iss/statistics/engines/stock/currentprices').content.decode()
+        return self.xml2pandas(doc)
+    
+    def iss_securitytypes(self):
+        doc = requests.get('https://iss.moex.com/iss/securitytypes').content.decode()
+        return self.xml2pandas(doc)
+    
+    def iss_history(self, engine, market, security=None):
+        url = 'https://iss.moex.com/iss/'
+        url += 'engines/' + engine + '/'
+        url += 'markets/' + market + '/'
+        if security == None:
+            url += 'securities.xml'
+        else:
+            url += 'securities/' + security + '.xml'
+        doc = requests.get(url).content.decode()
+        return self.xml2pandas(doc)
+
+
+    def iss_history_dates(self, engine, market, security):
+        url = 'https://iss.moex.com/iss/'
+        url += 'engines/' + engine + '/'
+        url += 'markets/' + market + '/'
+        url += 'securities/' + security + '/'
+        url += 'dates.xml'
+        doc = requests.get(url).content.decode()
+        return self.xml2pandas(doc)
 
 
