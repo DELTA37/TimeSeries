@@ -46,7 +46,7 @@ class Conv1dLayer(nn.Conv1d, Layer):
 
 class Conv2dLayer(nn.Conv2d, Layer):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
-        nn.Conv1d.__init__(self, *args, **kwargs)
+        nn.Conv2d.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
 class LinearLayer(nn.Linear, Layer):

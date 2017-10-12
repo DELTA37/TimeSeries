@@ -97,6 +97,13 @@ class BaseNet(nn.Module):
     def get_inputs(self):
         pass
 
-    @abstractmethod
     def get_outputs(self):
-        pass
+        '''
+        @info         : this function is for defining outputs of model, there names and shapes
+
+        @return       : name maped to variable which contain inside a tensor needed shape
+        @rtype        : dict(str : torch.autograd.Variable(torch.FloatTensor(), requires_grad=False))  
+        '''
+        inputs = self.get_inputs()
+        return self.dict_forward(inputs)
+
