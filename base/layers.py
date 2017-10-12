@@ -59,5 +59,30 @@ class SigmoidLayer(nn.Sigmoid, Layer):
         nn.Sigmoid.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
+class MaxPool2dLayer(nn.MaxPool2d, Layer):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.MaxPool2d.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+class ReLULayer(nn.ReLU, Layer):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.ReLU.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+
+class Conv2d_BN_ReLULayer(nn.Module, Layer):
+    def __init__(self, in_channels, out_channels, kernel_size, *args, 
+            trainable=True, restore=True, 
+            stride=1, padding=0, dilation=1, groups=1, bias=True, **kwargs):
+        nn.Module.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
+        self.bn   = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU()
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        x = self.relu(x)
+        return x
 
 Layer.AccessableMethods = dict({cl.__name__ : cl for cl in Layer.__subclasses__()})
