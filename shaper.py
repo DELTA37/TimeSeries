@@ -15,9 +15,9 @@ parser.add_argument("--model", nargs=1, help="Model shape", type=bool)
 parser.add_argument("--config", type=str, nargs=1, help='dataset configuration')
 
 args = parser.parse_args()
-config = json.load(open(args.config[0]))
 
 if args.model:
+    config = json.load(open(args.config[0]))
     net_model = Net(config)
     inputs = net_model.get_inputs()
     outputs = net_model.get_outputs()
@@ -28,6 +28,7 @@ if args.model:
         print("shape of {} is {}".format(key, var.data.numpy().shape))
 
 elif args.reader:
+    config = json.load(open(args.config[0]))
     net_reader = NetReader(config)
     obj0 = net_reader.dataset[0]
     for key, var in obj0.items():
