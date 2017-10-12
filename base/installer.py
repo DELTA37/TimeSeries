@@ -37,19 +37,32 @@ def dataset_install(url, path, chunk_size=1000):
         i += 1
     f.close()
     print("Extracting ...") 
-    if tp == 'application/zip':
-        import zipfile
-        zip_ref = zipfile.ZipFile(filename, 'r')
-        zip_ref.extractall(os.path.expanduser(path))
-        zip_ref.close()
-    elif tp == 'application/x-gzip':
-        import tarfile
-        tar = tarfile.open(filename, 'r')
-        tar.extractall(path=path)
-        tar.close()
-
+    unpack(filename, path)
     os.remove(filename)
     print("Done!") 
 
     
-    
+def unpack(path, where_path):
+    path = os.path.expanduser(path)
+    where_path = os.path.expanduser(where_path)
+    ext = os.path.splitext(path)[1]
+
+    if ext == '.zip':
+        import zipfile
+        zip_ref = zipfile.ZipFile(path, 'r')
+        zip_ref.extractall(where_path)
+        zip_ref.close()
+
+    if is_tarfile(path):
+        import tarfile
+        tar = tarfile.open(path, 'r')
+        tar.extractall(path=where_path)
+        tar.close()
+
+    if ext == '.rar':
+        import rarfile
+        rar = rarfile.RarFile(path)
+        rar.extractall(where_path)
+        rar.close()
+
+
