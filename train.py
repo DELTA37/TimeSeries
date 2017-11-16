@@ -11,10 +11,6 @@ import torch
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('lr', type=float, nargs=1, help='learning rate')
-parser.add_argument('auto_save', type=int, nargs=1, help='time interval saving model')
-parser.add_argument('num_epoch', type=int, nargs=1, help='number of epochs')
-parser.add_argument('opt', type=str, nargs=1, help='optimizer')
 parser.add_argument('config', type=str, nargs=1, help='dataset configuration')
 
 args = parser.parse_args()
@@ -23,12 +19,12 @@ def save_checkpoint(state, path, epoch=0, step=0):
     filename = os.path.join(path, 'checkpoint-{}-{}.ckpt.tar'.format(epoch, step))
     torch.save(state, filename)
    
-lr = args.lr[0]
-N = args.num_epoch[0]
-auto_save = args.auto_save[0]
 config = json.load(open(args.config[0]))
+lr = config["learning_rate"]
+N = config["num_epoch"]
+auto_save = config["auto_save"]
 start_epoch = 0
-opt_name = args.opt[0]
+opt_name = config["opt"]
 
 ### model and reader
 net_model = Net(config)

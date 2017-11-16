@@ -11,13 +11,12 @@ import torch
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('num_batches', type=int, nargs=1, help='number of batches')
 parser.add_argument('config', type=str, nargs=1, help='dataset configuration')
 
 args = parser.parse_args()
 
-num_batches = args.num_batches[0]
 config = json.load(open(args.config[0]))
+num_batches = config["test_num_batches"]
 
 ### model and reader
 net_model = Net(config)
@@ -54,7 +53,7 @@ if config['restore']:
         print("=> no checkpoint found at '{}'".format(restore_file))
         exit()
 
-### training
+### testing
 
 t = 0
 for data in data_loader:
