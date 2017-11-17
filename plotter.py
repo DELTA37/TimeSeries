@@ -10,6 +10,10 @@ args = parser.parse_args()
 
 security = args.security
 splitit = args.splitit
+
+if security == 'list':
+    print(moex.collecter.getSecurityList()[0].secid.to_string())
+    exit()
 if splitit == None:
     splitit = 0
 

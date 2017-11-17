@@ -21,7 +21,7 @@ def save_checkpoint(state, path, epoch=0, step=0):
    
 config = json.load(open(args.config[0]))
 lr = config["learning_rate"]
-N = config["num_epoch"]
+N = int(config["num_epoch"])
 auto_save = config["auto_save"]
 start_epoch = 0
 opt_name = config["opt"]

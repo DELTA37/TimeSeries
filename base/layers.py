@@ -148,7 +148,7 @@ class ResidualBlock(nn.Module, LayerList):
 
 
 class DenseBlock(nn.Module, LayerList):
-    def __init__(self, trainable, restore, *args)
+    def __init__(self, trainable, restore, *args):
         nn.Module.__init__(self)
         LayerList.__init__(self, trainable, restore, args)
     

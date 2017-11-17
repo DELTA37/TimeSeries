@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 
+def getSecurityList():
+    if not hasattr(getSecurityList, "parser"):
+        getSecurityList.parser = moex.parser.Parser({})
+    
+    return getSecurityList.parser.iss_securities()
+
+
 def getPriceArray(security):
     if not hasattr(getPriceArray, "parser"):
         getPriceArray.parser = moex.parser.Parser({})
