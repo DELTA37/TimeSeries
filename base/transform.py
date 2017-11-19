@@ -25,4 +25,6 @@ def getKalmanFilter(sig_ksi, sig_eta, z0):
     kalman.K = 0
     return kalman
 
+def getExample_seq2seq(arr, window_size, idx, count=1):
+    return arr[idx:idx+window_size], arr[idx+window_size+1:idx+window_size+count+1]
 
