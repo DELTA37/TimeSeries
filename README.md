@@ -39,6 +39,7 @@ Some example:
 ```  
 will plot something like that:
 ![Example](/examples/PRICES_ABRD.png?raw=true "Title")
+
 The list of all securities you can find [this](https://iss.moex.com/iss/securities/)
 
 
