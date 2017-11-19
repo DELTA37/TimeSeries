@@ -33,7 +33,13 @@ virtualenv -p python3 envname
 pip install --upgrade virtualenv
 pip install -r requirements.txt
 ```
+Some example:
+```
+(timenv) MacBook-Air-Roman:TimeSeries romandegtyarev$ python plotter.py ABRD
+```  
+will plot something like that:
+![Example](/examples/PRICES_ABRD.png?raw=true "Title")
 
-  
-Our wiki:  
+
+# Our wiki:  
 https://github.com/DELTA37/TimeSeries/wiki/Articles  
