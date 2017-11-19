@@ -123,6 +123,22 @@ class LSTMLayer(nn.LSTM, Layer):
         Layer.__init__(self, trainable, restore)
 
 
+class BN1dLayer(nn.BatchNorm1d, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.BatchNorm1d.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+   
+class LeakyReLULayer(nn.LeakyReLU, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.LeakyReLU.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+class SoftMaxLayer(nn.Softmax, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Softmax.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+
 class Conv2d_BN_ReLULayer(nn.Module, Layer):
     def __init__(self, in_channels, out_channels, kernel_size, trainable=True, restore=True, 
             stride=1, padding=0, dilation=1, groups=1, bias=True):
