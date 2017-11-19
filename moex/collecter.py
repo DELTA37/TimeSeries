@@ -73,4 +73,5 @@ def PlotData(security, path, splitit = False):
         plt.legend()
         plt.xlabel('Time period')
         plt.ylabel('Price')
+        plt.xticks(rotation=90)
         plt.savefig(os.path.join(path, 'PRICES_' + security + '.png'))
