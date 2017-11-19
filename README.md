@@ -27,13 +27,21 @@ Then you can launch training and testing by
 # HOW TO PLOT DATA FROM MOEX
 
 We provide communication with http://www.moex.com with the help of open-api. 
-To plot graph of the security you want, you need to install [requirements.txt](https://github.com/Kakoedlinnoeslovo/TimeSeries/blob/master/requirements.txt), to do this: 
+To plot graph of the security you want, you need firstly install [requirements.txt](requirements.txt), to do this: 
 ```
 virtualenv -p python3 envname
 pip install --upgrade virtualenv
 pip install -r requirements.txt
 ```
+And then you if you make this command:
+```
+(timenv) MacBook-Air-Roman:TimeSeries romandegtyarev$ python plotter.py ABRD
+```  
+you'll see something like that:
+![Example](/examples/PRICES_ABRD.png?raw=true "Title")
 
-  
-Our wiki:  
+The list of all [securities](https://iss.moex.com/iss/securities/).
+
+
+# Our wiki:  
 https://github.com/DELTA37/TimeSeries/wiki/Articles  
