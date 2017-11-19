@@ -24,5 +24,15 @@ Then you can launch training and testing by
   - python3.6 train.py <parameters>  
   - python3.6 test.py <parameters>  
   
+#HOW TO PLOT DATA FROM MOEX
+We provide communication with http://www.moex.com with the help of open-api. 
+To plot graph of the security you want, you need to install [requirements.txt](https://github.com/Kakoedlinnoeslovo/TimeSeries/blob/master/requirements.txt), to do this: 
+```
+virtualenv -p python3 envname
+pip install --upgrade virtualenv
+pip install -r requirements.txt
+```
+
+  
 Our wiki:  
 https://github.com/DELTA37/TimeSeries/wiki/Articles  
