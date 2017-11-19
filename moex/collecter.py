@@ -6,14 +6,14 @@ import pandas as pd
 def getSecurityList():
     if not hasattr(getSecurityList, "parser"):
         getSecurityList.parser = moex.parser.Parser({})
-    
+
     return getSecurityList.parser.iss_securities()
 
 
 def getPriceArray(security):
     if not hasattr(getPriceArray, "parser"):
         getPriceArray.parser = moex.parser.Parser({})
-    
+
     def to_float(x, dtype):
         if str.isdigit(x.replace('.','',1)):
             return eval(dtype)(x)
@@ -22,7 +22,7 @@ def getPriceArray(security):
     engine, market = getPriceArray.parser.getEngineMarketForSecurity(security)
     inf = getPriceArray.parser.iss_history(engine, market, security)[0]
 
-#    VALUE                       = inf['VALUE'].fillna(0) 
+#    VALUE                       = inf['VALUE'].fillna(0)
     inf['OPEN']                 = pd.to_numeric(inf['OPEN'], errors='coerce')
     OPEN                        = inf['OPEN'].fillna(0)
 
@@ -66,10 +66,10 @@ def PlotData(security, path, splitit = False):
         plt.xlabel('Time period')
         plt.ylabel('Price')
     else:
-        plt.plot(d['OPEN'], label='OPEN', color='b')
-        plt.plot(d['CLOSE'], label='CLOSE', color='g')
-        plt.plot(d['HIGH'], label='HIGH', color='r')
-        plt.plot(d['LOW'], label='LOW', color='k')
+        plt.plot(d['DATA'], d['OPEN'], label='OPEN', color='b')
+        plt.plot(d['DATA'], d['CLOSE'], label='CLOSE', color='g')
+        plt.plot(d['DATA'], d['HIGH'], label='HIGH', color='r')
+        plt.plot(d['DATA'], d['LOW'], label='LOW', color='k')
         plt.legend()
         plt.xlabel('Time period')
         plt.ylabel('Price')
