@@ -24,7 +24,9 @@ class MyDataset(Dataset):
     def __getitem__(self, idx):
         arr   = np.array(self.close_price[idx:idx+self.window_size])
         n     = np.array(self.close_price[idx+self.window_size+1])
-        return {'price' : torch.FloatTensor(arr), 'label' : torch.LongTensor([int(np.mean(arr) >= n)])}
+
+        prob  = int(np.mean(arr) >= n)
+        return {'price' : torch.FloatTensor(arr), 'label' : torch.LongTensor([prob])}
 
 class NetReader(Reader):
     def __init__(self, params):

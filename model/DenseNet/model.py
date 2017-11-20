@@ -28,7 +28,7 @@ class Net(BaseNet):
         self.layer1         = LinearLayer(self.window_size, 2 * self.window_size, bias=True)
         self.batchnorm1     = BN1dLayer(2 * self.window_size)
         self.leakyrelu1     = LeakyReLULayer()
-        self.layer2         = LinearLayer(2 * self.window_size, 1, bias=True)
+        self.layer2         = LinearLayer(2 * self.window_size, 2, bias=True)
         self.activation     = SigmoidLayer()
      
     def get_inputs(self):
@@ -68,17 +68,16 @@ class Net(BaseNet):
         @return       : loss function, which takes (y, y_pred, ...) and gives result of loss function on current object
         @rtype        : callable
         '''
-        class Loss(nn.Module):
-            def __init__(self):
-                super(Loss, self).__init__()
+        class NLLLoss_fn(nn.Module):
+            def __init__(self, params):
+                super(NLLLoss_fn, self).__init__()
                 self.aggr_loss = nn.CrossEntropyLoss() # you can provide your own loss function
-                self.loss = None
             def forward(self, y_pred, y):
-                return self.aggr_loss(y_pred['label'], y['label']) # for a dict values passed to __call__
+                return self.aggr_loss(y_pred['label'], y['label'].view(-1)) # for a dict values passed to __call__
             def backward(self):
                 return self.aggr_loss.backward()
                 
-        return Loss()
+        return NLLLoss_fn(self.params)
 
 
 
