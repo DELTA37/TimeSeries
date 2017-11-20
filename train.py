@@ -20,9 +20,9 @@ def save_checkpoint(state, path, epoch=0, step=0):
     torch.save(state, filename)
    
 config = json.load(open(args.config[0]))
-lr = config["learning_rate"]
+lr = float(config["learning_rate"])
 N = int(config["num_epoch"])
-auto_save = config["auto_save"]
+auto_save = int(config["auto_save"])
 start_epoch = 0
 opt_name = config["opt"]
 
@@ -89,33 +89,56 @@ else:
     if not os.path.isdir(config['restore_path']):
         os.mkdir(config['restore_path'])
 
+
+### asserts and assigns
+x = dict()
+y = dict()
+
+for data in data_loader:
+
+    for key, var in inputs.items():
+        if key not in data.keys():
+            print("ERROR: In data there is no key - {}".format(key))
+            assert(0)
+        if data[key].numpy().shape != var.data.numpy().shape:
+            print("ERROR: Shapes of inputs and data different at {}".format(key))
+            print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
+            assert(0)
+        x[key] = Variable(data[key], requires_grad=False)
+
+    for key, var in outputs.items():
+        if key not in data.keys():
+            print("ERROR: In data there is no key - {}".format(key))
+            assert(0)
+        y[key] = Variable(data[key], requires_grad=False)
+    y_pred = net_model(x)
+    
+    try:
+        loss = criterion(y_pred, y)
+    except:
+        print("ERROR:") 
+        print("loss name is {}".format(str(loss)))
+        for key, var in outputs.items():
+            print("key: {}".format(key))
+            print("shape of data is {}".format(data[key].numpy().shape))
+            print("type of data is {}".format(data[key].type()))
+            print("shape of input is {}".format(var.data.numpy().shape))
+            print("type of input is {}".format(var.data.type()))
+            exit()
+    break
+
+
 ### training
 
 for ep in range(start_epoch, start_epoch + N):
     t = 0
     for data in data_loader:
-        x = dict()
-        y = dict()
 
         for key, var in inputs.items():
-            if key not in data.keys():
-                print("ERROR: In data there is no key - {}".format(key))
-                assert(0)
-            if data[key].numpy().shape != var.data.numpy().shape:
-                print("ERROR: Shapes of inputs and data different at {}".format(key))
-                print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
-                assert(0)
-            x[key] = Variable(data[key], requires_grad=False)
+            x[key].data = data[key]
 
         for key, var in outputs.items():
-            if key not in data.keys():
-                print("ERROR: In data there is no key - {}".format(key))
-                assert(0)
-            if data[key].numpy().shape != var.data.numpy().shape:
-                print("ERROR: Shapes of inputs and data different at {}".format(key))
-                print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
-                assert(0)
-            y[key] = Variable(data[key], requires_grad=False)
+            y[key].data = data[key]
 
         def closure(): # special opt methods
             if not hasattr(closure, 'once'): 
