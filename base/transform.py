@@ -20,6 +20,8 @@ def getKalmanFilter(sig_ksi, sig_eta, z0):
         kalman.x = kalman.K * z_k1 + (1 - kalman.K) * (kalman.x + u_k)
 
         return kalman.x
+    kalman.sig_eta = sig_eta
+    kalman.sig_ksi = sig_ksi
     kalman.Ee = sig_eta ** 2
     kalman.x = z0
     kalman.K = 0
