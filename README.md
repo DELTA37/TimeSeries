@@ -40,7 +40,10 @@ And then you if you make this command:
 you'll see something like that:
 ![Example](/examples/PRICES_ABRD.png?raw=true "Title")
 
-The list of all [securities](https://iss.moex.com/iss/securities/).
+The list of all [securities](https://iss.moex.com/iss/securities/):
+```
+(timenv) MacBook-Air-Roman:TimeSeries romandegtyarev$ python plotter.py list
+```  
 
 
 # Our wiki:  

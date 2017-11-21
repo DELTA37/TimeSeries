@@ -8,3 +8,4 @@ results
 *.json
 *.png
 *.jpg
+*.pyc

@@ -117,9 +117,56 @@ class RNNLayer(nn.RNN, Layer):
         nn.RNN.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
-class LSTMLayer(nn.LSTM, Layer):
+class nativeLSTMLayer(nn.LSTM, Layer):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
         nn.LSTM.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+class ReshapeLayer(nn.Module, Layer):
+    def __init__(self, shape, trainable=True, restore=True, **kwargs):
+        nn.Module.__init__(self)
+        Layer.__init__(self, trainable, restore)
+        self.shape = shape
+    def forward(self, x):
+        x = x.view(*self.shape)
+        return x
+
+class BatchReshapeLayer(nn.Module, Layer):
+    def __init__(self, shape, trainable=True, restore=True, **kwargs):
+        nn.Module.__init__(self)
+        Layer.__init__(self, trainable, restore)
+        self.shape = shape
+    def forward(self, x):
+        x = x.view(*([x.data.numpy().shape[0]] + list(self.shape)))
+        return x
+
+class LSTMLayer(nn.Module, Layer):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Module.__init__(self)
+        Layer.__init__(self, trainable, restore)
+        self.pack = nn.utils.rnn.pack_padded_sequence()
+        self.lstm = nn.LSTM(*args, **kwargs)
+        self.unpack = nn.utils.rnn.pad_packed_sequence()
+
+    def forward(self, x):
+        x = self.pack(x)
+        x = self.lstm(x)
+        x = self.unpack(x)
+        return x
+
+class BN1dLayer(nn.BatchNorm1d, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.BatchNorm1d.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+   
+class LeakyReLULayer(nn.LeakyReLU, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.LeakyReLU.__init__(self, *args, **kwargs)
+        Layer.__init__(self, trainable, restore)
+
+class SoftMaxLayer(nn.Softmax, Layer):
+     def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Softmax.__init__(self, *args, **kwargs)
         Layer.__init__(self, trainable, restore)
 
 

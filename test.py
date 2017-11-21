@@ -16,7 +16,7 @@ parser.add_argument('config', type=str, nargs=1, help='dataset configuration')
 args = parser.parse_args()
 
 config = json.load(open(args.config[0]))
-num_batches = config["test_num_batches"]
+num_batches = int(config["test_num_batches"])
 
 ### model and reader
 net_model = Net(config)
@@ -53,14 +53,11 @@ if config['restore']:
         print("=> no checkpoint found at '{}'".format(restore_file))
         exit()
 
-### testing
+### asserts and assigns
+x = dict()
+y = dict()
 
-t = 0
 for data in data_loader:
-    if t >= num_batches:
-        exit()
-    x = dict()
-    y = dict()
 
     for key, var in inputs.items():
         if key not in data.keys():
@@ -76,11 +73,35 @@ for data in data_loader:
         if key not in data.keys():
             print("ERROR: In data there is no key - {}".format(key))
             assert(0)
-        if data[key].numpy().shape != var.data.numpy().shape:
-            print("ERROR: Shapes of inputs and data different at {}".format(key))
-            print("shape of data is {}, shape of input is {}".format(data[key].numpy().shape, var.data.numpy().shape))
-            assert(0)
         y[key] = Variable(data[key], requires_grad=False)
+    y_pred = net_model(x)
+    
+    try:
+        loss = criterion(y_pred, y)
+    except:
+        print("ERROR:") 
+        print("loss name is {}".format(str(loss)))
+        for key, var in outputs.items():
+            print("key: {}".format(key))
+            print("shape of data is {}".format(data[key].numpy().shape))
+            print("type of data is {}".format(data[key].type()))
+            print("shape of input is {}".format(var.data.numpy().shape))
+            print("type of input is {}".format(var.data.type()))
+            exit()
+    break
+
+### testing
+
+t = 0
+for data in data_loader:
+    if t >= num_batches:
+        exit()
+
+    for key, var in inputs.items():
+        x[key].data = data[key]
+
+    for key, var in outputs.items():
+        y[key].data = data[key]
 
     y_pred = net_model(x)
     
