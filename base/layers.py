@@ -172,7 +172,7 @@ class SoftMaxLayer(nn.Softmax, Layer):
 
 class Conv2d_BN_ReLULayer(nn.Module, Layer):
     def __init__(self, in_channels, out_channels, kernel_size, trainable=True, restore=True, 
-            stride=1, padding=0, dilation=1, groups=1, bias=True):
+            stride=1, padding=0, dilation=1, groups=1, bias=True, **kwargs):
         nn.Module.__init__(self)
         Layer.__init__(self, trainable, restore)
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
@@ -184,8 +184,18 @@ class Conv2d_BN_ReLULayer(nn.Module, Layer):
         x = self.relu(x)
         return x
 
+class SequentialBlock(nn.Module, LayerList):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
+        nn.Module.__init__(self)
+        LayerList.__init__(self, trainable, restore, args)
+    
+    def forward(self, x):
+        for module in self.modules:
+            x = module(x)
+        return x
+
 class ResidualBlock(nn.Module, LayerList):
-    def __init__(self, trainable, restore, *args):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
         nn.Module.__init__(self)
         LayerList.__init__(self, trainable, restore, args)
     
@@ -195,7 +205,7 @@ class ResidualBlock(nn.Module, LayerList):
 
 
 class DenseBlock(nn.Module, LayerList):
-    def __init__(self, trainable, restore, *args):
+    def __init__(self, *args, trainable=True, restore=True, **kwargs):
         nn.Module.__init__(self)
         LayerList.__init__(self, trainable, restore, args)
     
