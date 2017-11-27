@@ -65,6 +65,9 @@ if opt_name == 'SGD':
 elif opt_name == 'Adam':
     optimizer = optim.Adam(opt_params)
     closure_bool = 0
+elif opt_name == 'own':
+    optimizer = net_model.get_optim()
+    closure_bool = optimizer.closure_bool
 else:
     print("ERROR:")
     print("There is no optimizer named {}".format(opt_name))
@@ -141,6 +144,7 @@ for ep in range(start_epoch, start_epoch + N):
             y[key].data = data[key]
 
         def closure(): # special opt methods
+            global optimiser, net_model, criterion, x, y, auto_save
             if not hasattr(closure, 'once'): 
                 '''
                 we need once as we send this function to optimiser 

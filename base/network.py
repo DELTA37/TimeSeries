@@ -4,6 +4,7 @@ from base.layers import *
 from collections import OrderedDict
 from abc import *
 import base.deprecater as depr
+from termcolor import colored
 
 class BaseNet(nn.Module):
     def __init__(self, params, *args, trainable=True, restore=True, **kwargs):
@@ -24,6 +25,7 @@ class BaseNet(nn.Module):
         @rtype                          : None 
         '''
         super(BaseNet, self).__init__(*args, **kwargs)
+        self.opt        = None
         self.trainable  = trainable
         self.restore    = restore
         self.params     = depr.DeprecateWrapper(params, params['deprecate'])
@@ -37,7 +39,7 @@ class BaseNet(nn.Module):
             res = list()
             for layer in dir(self):
                 l = getattr(self, layer)
-                if isinstance(l, Layer) or isinstance(l, BaseNet):
+                if isinstance(l, Layer) or isinstance(l, BaseNet) or isinstance(l, LayerList):
                     tr = l.get_trainable()
                     newtr = []
                     for key, val in tr:
@@ -56,7 +58,7 @@ class BaseNet(nn.Module):
             res = list()
             for layer in dir(self):
                 l = getattr(self, layer)
-                if isinstance(l, Layer) or isinstance(l, BaseNet):
+                if isinstance(l, Layer) or isinstance(l, BaseNet) or isinstance(l, LayerList):
                     rs = l.get_restorable()
                     newrs = []
                     for key, val in rs:
@@ -106,4 +108,19 @@ class BaseNet(nn.Module):
         '''
         inputs = self.get_inputs()
         return self.dict_forward(inputs)
+    
+    def opt_call(self, context):
+        '''
+        @info                   : we need update some weights inside model executing during training
 
+        @param      context     : context of calling inside model, it is transport between model and optimizer
+        @type       context     : dict
+
+        '''
+        if self.params['kind'] == 'train':
+            if self.params['opt'] != 'own':
+                print(colored("ERROR:", 'red'))
+                warnings.warn("you cannot call not your own optimizer")
+                time.sleep(10)
+                raise RuntimeError 
+            self.opt.call(context)
