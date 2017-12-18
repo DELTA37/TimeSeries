@@ -36,7 +36,7 @@ class Net(BaseNet):
                 LinearLayer(self.h_dim, self.X_dim),
                 SigmoidLayer(),
         )
-
+        
         self.G2 = SequentialBlock(
                 LinearLayer(self.X_dim + self.z_dim, self.h_dim),
                 ReLULayer(),
@@ -82,6 +82,37 @@ class Net(BaseNet):
         @return       : output of our model after all operations
         @rtype        : dict(str : torch.autograd.Variable())
         '''
+        
+        for _ in range(self.params['ncritics']):
+            G1_X1 = self.G1(torch.cat([x['X1'], x['z1']], 1))
+            D1_real = self.D1(x['X2'])
+            D1_fake = self.D1(G1_X1)
+            if self.params['kind'] == 'train':
+                ploss = self.loss_fn.partial_loss(
+                    {
+                        'D1_real' : D1_real,
+                        'D1_fake' : D1_fake,
+                    }, 
+                    None, 
+                    'D1'
+                )
+                self.opt_call(['D1', ploss])
+
+            G2_X2 = self.G2(torch.cat([x['X2'], x['z2']], 1))
+            D2_real = self.D2(x['X2'])
+            D2_fake = self.D2(G2_X2)
+
+            if self.params['kind'] == 'train':
+                ploss = self.loss_fn.partial_loss(
+                    {
+                        'D2_real' : D2_real,
+                        'D2_fake' : D2_fake,
+                    }, 
+                    None, 
+                    'D2'
+                )
+
+                self.opt_call(['D2', ploss])
 
         G1_X1 = self.G1(torch.cat([x['X1'], x['z1']], 1))
         D1_real = self.D1(x['X2'])
@@ -128,15 +159,23 @@ class Net(BaseNet):
                 loss += sefl.lam2 * torch.mean(torch.sum(torch.abs(y_pred['X2_recon'] - y_pred['X2']), 1))
                 return loss
 
-        return Loss()
+            def partial_loss(self, y_pred, y, context):
+                if context == 'D1':
+                    return -(torch.mean(y_pred['D1_real']) - torch.mean(y_pred['D1_fake']))
+                if context == 'D2':
+                    return -(torch.mean(y_pred['D2_real']) - torch.mean(y_pred['D2_fake']))
+
+
+        self.loss_fn = Loss()
+        return self.loss_fn
 
     def get_optim(self):
         class Opt:
-            def __init__(self):
+            def __init__(self, model):
                 self.closure_bool = 0 
-                self.optD1 = RMSprop(self.D1.get_trainable(), self.params['lr'])
-                self.optD2 = RMSprop(self.D2.get_trainable(), self.params['lr'])
-                self.optG =  RMSprop(self.G1.get_trainable() + self.G2.get_trainable(), self.params['lr'])
+                self.optD1 = RMSprop(model.D1.get_trainable(), model.params['lr'])
+                self.optD2 = RMSprop(model.D2.get_trainable(), model.params['lr'])
+                self.optG =  RMSprop(model.G1.get_trainable() + model.G2.get_trainable(), model.params['lr'])
 
             def zero_grad(self):
                 self.optD1.zero_grad()
@@ -149,6 +188,18 @@ class Net(BaseNet):
                 self.optG.step()
             
             def call(self, context):
-                pass
-        self.opt = Opt()
+                if context[0] == 'D1':
+                    context[1].backward()
+                    self.optD1.step()
+                    self.zero_grad()
+                if context[0] == 'D2':
+                    context[1].backward()
+                    self.optD2.step()
+                    self.zero_grad()
+                if context[0] == 'G':
+                    context[1].backward()
+                    self.optG.step()
+                    self.zero_grad()
+
+        self.opt = Opt(self)
         return self.opt

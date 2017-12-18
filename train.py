@@ -31,15 +31,12 @@ net_model = Net(config)
 net_reader = NetReader(config)
 net_model.train(mode=True)
 
-data_loader = net_reader.getDataLoader()
-inputs = net_model.get_inputs()
-outputs = net_model.get_outputs()
 criterion = net_model.get_criterion(config)
+data_loader = net_reader.getDataLoader()
 
 ### trainable and restorable
 trainable_var = OrderedDict(net_model.get_trainable())
 untrainable_var = OrderedDict(net_model.named_parameters())
-
 for key, val in trainable_var.items():
     del untrainable_var[key]
 
@@ -72,6 +69,7 @@ else:
     print("ERROR:")
     print("There is no optimizer named {}".format(opt_name))
 
+
 ### restoraion 
 if config['restore']:
     restore_file = os.path.join(config['restore_path'], config['restore_file'])
@@ -92,6 +90,8 @@ else:
     if not os.path.isdir(config['restore_path']):
         os.mkdir(config['restore_path'])
 
+inputs = net_model.get_inputs()
+outputs = net_model.get_outputs()
 
 ### asserts and assigns
 x = dict()

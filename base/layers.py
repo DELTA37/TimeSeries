@@ -41,7 +41,7 @@ class Layer:
             return list()
 
 
-class LayerList(Layer):
+class LayerList(Layer, nn.Module):
     def __init__(self, trainable, restore, *args):
         '''
         @param trainable : specify will we train this layer 
@@ -53,8 +53,11 @@ class LayerList(Layer):
         @return          : constructor
         @rtype           : None
         '''
-        super(LayerList, self).__init__(trainable, restore)
-        self.modules   = args
+        nn.Module.__init__(self)
+        Layer.__init__(self, trainable, restore)
+        self.n = len(args)
+        for i in range(len(args)):
+            self.add_module("m" + str(i), args[i])
 
     def get_trainable(self):
         '''
@@ -63,8 +66,12 @@ class LayerList(Layer):
         '''
         if self.trainable:
             lst = []
-            for module in self.modules:
-                lst.append(module.get_trainable())
+            for i in range(self.n):
+                tr = getattr(self, "m" + str(i)).get_trainable()
+                newtr = []
+                for key, val in tr:
+                    newtr.append(("m" + str(i) + '.' + key, val))
+                lst += newtr
             return lst
         else:
             return list()
@@ -76,11 +83,16 @@ class LayerList(Layer):
         '''
         if self.restore:
             lst = []
-            for module in self.modules:
-                lst.append(module.get_restorable())
+            for i in range(self.n):
+                tr = getattr(self, "m" + str(i)).get_restorable()
+                newtr = []
+                for key, val in tr:
+                    newtr.append(("m" + str(i) + '.' + key, val))
+                lst += newtr
             return lst
         else:
             return list()
+    
 
 class Conv1dLayer(nn.Conv1d, Layer):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
@@ -184,33 +196,30 @@ class Conv2d_BN_ReLULayer(nn.Module, Layer):
         x = self.relu(x)
         return x
 
-class SequentialBlock(nn.Module, LayerList):
+class SequentialBlock(LayerList):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
-        nn.Module.__init__(self)
-        LayerList.__init__(self, trainable, restore, args)
+        LayerList.__init__(self, trainable, restore, *args)
     
     def forward(self, x):
-        for module in self.modules:
-            x = module(x)
+        for i in range(self.n):
+            x = getattr(self, "m" + str(i))(x)
         return x
 
-class ResidualBlock(nn.Module, LayerList):
+class ResidualBlock(LayerList):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
-        nn.Module.__init__(self)
-        LayerList.__init__(self, trainable, restore, args)
+        LayerList.__init__(self, trainable, restore, *args)
     
     def forward(self, x):
-        lst = [module(x) for module in self.modules]
+        lst = [getattr(self, "m" + str(i))(x) for i in range(self.n)]
         return reduce(lambda x, y: x + y, lst)
 
 
-class DenseBlock(nn.Module, LayerList):
+class DenseBlock(LayerList):
     def __init__(self, *args, trainable=True, restore=True, **kwargs):
-        nn.Module.__init__(self)
-        LayerList.__init__(self, trainable, restore, args)
+        LayerList.__init__(self, trainable, restore, *args)
     
     def forward(self, x):
-        lst = [module(x) for module in self.modules]
+        lst = [getattr(self, "m" + str(i))(x) for i in range(self.n)]
         return torch.cat(lst, dim=-1)
 
 Layer.AccessableMethods = dict({cl.__name__ : cl for cl in Layer.__subclasses__()})
