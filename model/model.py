@@ -122,8 +122,8 @@ class Net(BaseNet):
         D2_real = self.D2(x['X2'])
         D2_fake = self.D2(G2_X2)
 
-        G2_G1_X1 = self.G2(G1_X1)
-        G1_G2_X2 = self.G1(G2_X2)
+        G2_G1_X1 = self.G2(torch.cat([G1_X1, x['z1']], 1))
+        G1_G2_X2 = self.G1(torch.cat([G2_X2, x['z2']], 1))
 
         return {
             'X1'      : x['X1'],
@@ -149,14 +149,15 @@ class Net(BaseNet):
         @rtype        : callable
         '''
         class Loss(nn.Module):
-            def __init__(self):
+            def __init__(self, params):
                 super(Loss, self).__init__()
+                self.params = params
             def forward(self, y_pred, y):
                 loss = -(torch.mean(y_pred['D1_real']) - torch.mean(y_pred['D1_fake']))
                 loss -= (torch.mean(y_pred['D2_real']) - torch.mean(y_pred['D2_fake']))
                 loss -= torch.mean(y_pred['D1_fake']) + torch.mean(y_pred['D2_fake'])
-                loss += self.lam1 * torch.mean(torch.sum(torch.abs(y_pred['X1_recon'] - y_pred['X1']), 1))
-                loss += sefl.lam2 * torch.mean(torch.sum(torch.abs(y_pred['X2_recon'] - y_pred['X2']), 1))
+                loss += self.params['lam1'] * torch.mean(torch.sum(torch.abs(y_pred['X1_recon'] - y_pred['X1']), 1))
+                loss += self.params['lam2'] * torch.mean(torch.sum(torch.abs(y_pred['X2_recon'] - y_pred['X2']), 1))
                 return loss
 
             def partial_loss(self, y_pred, y, context):
@@ -166,7 +167,7 @@ class Net(BaseNet):
                     return -(torch.mean(y_pred['D2_real']) - torch.mean(y_pred['D2_fake']))
 
 
-        self.loss_fn = Loss()
+        self.loss_fn = Loss(self.params)
         return self.loss_fn
 
     def get_optim(self):
@@ -251,6 +252,9 @@ class Net(BaseNet):
                     context[1].backward()
                     self.optG.step()
                     self.zero_grad()
+            
+            def state_dict(self):
+                return []
 
         self.opt = Opt(self)
         return self.opt

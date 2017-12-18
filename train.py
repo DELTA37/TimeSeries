@@ -112,9 +112,10 @@ for data in data_loader:
 
     for key, var in outputs.items():
         if key not in data.keys():
-            print("ERROR: In data there is no key - {}".format(key))
-            assert(0)
-        y[key] = Variable(data[key], requires_grad=False)
+            print("WARNING: In data there is no key - {}".format(key))
+            #assert(0)
+        else:
+            y[key] = Variable(data[key], requires_grad=False)
     y_pred = net_model(x)
     
     try:
@@ -128,7 +129,7 @@ for data in data_loader:
             print("type of data is {}".format(data[key].type()))
             print("shape of input is {}".format(var.data.numpy().shape))
             print("type of input is {}".format(var.data.type()))
-            exit()
+            raise
     break
 
 
@@ -139,10 +140,12 @@ for ep in range(start_epoch, start_epoch + N):
     for data in data_loader:
 
         for key, var in inputs.items():
-            x[key].data = data[key]
+            if key in x:
+                x[key].data = data[key]
 
         for key, var in outputs.items():
-            y[key].data = data[key]
+            if key in y:
+                y[key].data = data[key]
 
         def closure(): # special opt methods
             global optimiser, net_model, criterion, x, y, auto_save
