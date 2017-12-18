@@ -4,6 +4,9 @@ from torch.utils.data import Dataset
 import torch
 import cv2
 import os
+import scipy
+import numpy as np
+import scipy.ndimage
 
 class MyDataset(Dataset):
     name = "MNIST for dual learning"
@@ -20,6 +23,10 @@ class MyDataset(Dataset):
 
         z1 = torch.randn(self.z_dim)
         z2 = torch.randn(self.z_dim)
+        X1 = torch.FloatTensor(np.array(self.mnist[idx][0], dtype=np.float32).reshape(28*28))
+        X2 = np.array(self.mnist[len(self) - idx - 1][0]).reshape((-1,28,28))
+        X2 = scipy.ndimage.interpolation.rotate(X2, 90, axes=(1, 2))
+        X2 = torch.FloatTensor(np.float32(X2.reshape(28*28)))
 
         return {'X1' : X1, 'X2' : X2, 'z1' : z1, 'z2' : z2}
 

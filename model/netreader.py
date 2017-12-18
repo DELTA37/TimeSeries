@@ -4,37 +4,34 @@ from torch.utils.data import Dataset
 import torch
 import cv2
 import os
-import scipy
+import pandas as pd
 import numpy as np
-import scipy.ndimage
+
 
 class MyDataset(Dataset):
-    name = "MNIST for dual learning"
-    def __init__(self, data_path, transform, X_dim, z_dim):
+    name = "Apple Inc. stocks"
+    url  = "https://query1.finance.yahoo.com/v7/finance/download/AAPL?period1=1104534000&period2=1491775200&interval=1d&events=history&crumb=TlCZBkE9JKw"
+    def __init__(self, data_path, transform, window_size):
         super(MyDataset, self).__init__()
         self.data_path = data_path
         self.transform = transform
-        self.mnist = MNIST(root=data_path, download=True, train=True)
-        self.z_dim = z_dim
-        self.X_dim = X_dim
+        self.window_size = window_size
+        self.data = pd.read_csv(self.data_path, sep=',')[::-1]
+        self.close_price = self.data.ix[:, 'Adj Close'].tolist()
+        self.len = len(self.close_price)
     def __len__(self):
-        return 25000
+        return self.len - self.window_size - 1
     def __getitem__(self, idx):
+        arr   = np.array(self.close_price[idx:idx+self.window_size])
+        n     = np.array(self.close_price[idx+self.window_size+1])
 
-        z1 = torch.randn(self.z_dim)
-        z2 = torch.randn(self.z_dim)
-        X1 = torch.FloatTensor(np.array(self.mnist[idx][0], dtype=np.float32).reshape(28*28))
-        X2 = np.array(self.mnist[len(self) - idx - 1][0]).reshape((-1,28,28))
-        X2 = scipy.ndimage.interpolation.rotate(X2, 90, axes=(1, 2))
-        X2 = torch.FloatTensor(np.float32(X2.reshape(28*28)))
-
-        return {'X1' : X1, 'X2' : X2, 'z1' : z1, 'z2' : z2}
-
+        prob  = int(np.mean(arr) >= n)
+        return {'price' : torch.FloatTensor(arr), 'label' : torch.LongTensor([prob])}
 
 class NetReader(Reader):
     def __init__(self, params):
         super(NetReader, self).__init__(params)
-        self.dataset = MyDataset(self.data_path, self.transform, params['X_dim'], params['z_dim']) 
+        self.dataset = MyDataset(self.data_path, self.transform, params['window_size']) 
 
     def visualize(self, x, y, loss):
         pass
