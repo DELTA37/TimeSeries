@@ -173,9 +173,60 @@ class Net(BaseNet):
         class Opt:
             def __init__(self, model):
                 self.closure_bool = 0 
-                self.optD1 = RMSprop(model.D1.get_trainable(), model.params['lr'])
-                self.optD2 = RMSprop(model.D2.get_trainable(), model.params['lr'])
-                self.optG =  RMSprop(model.G1.get_trainable() + model.G2.get_trainable(), model.params['lr'])
+
+                trainable_var_D1 = OrderedDict(model.D1.get_trainable())
+                untrainable_var_D1 = OrderedDict(model.D1.named_parameters())
+                trainable_var_D2 = OrderedDict(model.D2.get_trainable())
+                untrainable_var_D2 = OrderedDict(model.D2.named_parameters())
+                trainable_var_G = OrderedDict(model.G1.get_trainable() + model.G2.get_trainable())
+                untrainable_var_G = OrderedDict(list(model.G1.named_parameters()) + list(model.G2.named_parameters()))
+
+                for key, val in trainable_var_D1.items():
+                    del untrainable_var_D1[key]
+
+                for key, val in trainable_var_D2.items():
+                    del untrainable_var_D2[key]
+
+                for key, val in trainable_var_G.items():
+                    del untrainable_var_G[key]
+                
+                lr = model.params['learning_rate']
+                opt_params_D1 = [
+                    {
+                        'params': list(trainable_var_D1.values()),
+                        'lr' : lr,
+                    },
+                    {
+                        'params': list(untrainable_var_D1.values()),
+                        'lr' : 0,
+                    },
+                ]
+
+                opt_params_D2 = [
+                    {
+                        'params': list(trainable_var_D1.values()),
+                        'lr' : lr,
+                    },
+                    {
+                        'params': list(untrainable_var_D1.values()),
+                        'lr' : 0,
+                    },
+                ]
+
+                opt_params_G = [
+                    {
+                        'params': list(trainable_var_D1.values()),
+                        'lr' : lr,
+                    },
+                    {
+                        'params': list(untrainable_var_D1.values()),
+                        'lr' : 0,
+                    },
+                ]
+
+                self.optD1 = RMSprop(opt_params_D1)
+                self.optD2 = RMSprop(opt_params_D2)
+                self.optG = RMSprop(opt_params_G)
 
             def zero_grad(self):
                 self.optD1.zero_grad()

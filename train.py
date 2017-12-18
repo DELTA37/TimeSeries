@@ -37,6 +37,7 @@ data_loader = net_reader.getDataLoader()
 ### trainable and restorable
 trainable_var = OrderedDict(net_model.get_trainable())
 untrainable_var = OrderedDict(net_model.named_parameters())
+
 for key, val in trainable_var.items():
     del untrainable_var[key]
 

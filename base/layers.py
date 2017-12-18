@@ -71,7 +71,7 @@ class LayerList(Layer, nn.Module):
                 newtr = []
                 for key, val in tr:
                     newtr.append(("m" + str(i) + '.' + key, val))
-                lst += newtr
+                lst.extend(newtr)
             return lst
         else:
             return list()
@@ -88,7 +88,7 @@ class LayerList(Layer, nn.Module):
                 newtr = []
                 for key, val in tr:
                     newtr.append(("m" + str(i) + '.' + key, val))
-                lst += newtr
+                lst.extend(newtr)
             return lst
         else:
             return list()
